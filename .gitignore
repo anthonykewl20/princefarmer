@@ -6,3 +6,5 @@ dist/
 .env
 .env.local
 tools/asset-gen/.cache/
+test-results/
+playwright-report/
