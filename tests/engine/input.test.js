@@ -36,17 +36,19 @@ describe('input', () => {
   });
 
   describe('wasJustPressed', () => {
-    it('returns true only on the frame the key transitioned from up to down', () => {
+    it('returns true on the frame the key transitioned from up to down', () => {
       input._set('Space', true);
       expect(input.wasJustPressed('jump')).toBe(true);
-      // On the next poll, it should no longer be "just pressed"
-      expect(input.wasJustPressed('jump')).toBe(false);
     });
 
-    it('returns false when the key was already down', () => {
+    it('keeps returning true across multiple polls in the same frame (regression: multi-consumer)', () => {
       input._set('Space', true);
-      input.wasJustPressed('jump'); // first poll — true
-      expect(input.wasJustPressed('jump')).toBe(false); // second poll — false
+      // Two systems poll in the same frame — both must see the press.
+      // (Previously self-cleared on first poll, blocking the second.)
+      expect(input.wasJustPressed('jump')).toBe(true);
+      expect(input.wasJustPressed('jump')).toBe(true);
+      input.endFrame();
+      expect(input.wasJustPressed('jump')).toBe(false);
     });
 
     it('returns false for an unbound action', () => {
