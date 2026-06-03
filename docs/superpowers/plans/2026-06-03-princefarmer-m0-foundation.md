@@ -1307,14 +1307,14 @@ Now we hook the StateMachine's `update()` into the LittleJS game loop, so the ac
 // PrinceFarmer boot
 //
 // On page load, this file:
-//  1. Mounts the LittleJS engine on the canvas.
+//  1. Mounts the LittleJS engine on the canvas (v1.18 callback API).
 //  2. Loads the (currently empty) data/ directory into the GameDB.
 //  3. Creates the SaveManager.
 //  4. Starts the StateMachine on the title scene.
 //  5. Hooks the state machine's update into the LittleJS game loop.
 //  6. Exposes a global for the Playwright E2E test to drive transitions.
 
-import { engineInit, setCanvasFixedSize } from 'littlejsengine';
+import { engineInit, timeDelta } from 'littlejsengine';
 import { loadJSON } from './utils/json-loader.js';
 import { GameDB } from './engine/gamedb.js';
 import { SaveManager } from './persistence/save.js';
@@ -1333,15 +1333,6 @@ async function loadContent() {
 }
 
 async function boot() {
-  // Mount LittleJS
-  setCanvasFixedSize(canvas);
-  engineInit(
-    canvas,
-    undefined, // no tilemap
-    undefined, // no vector overlay
-    undefined  // no image assets yet
-  );
-
   const db = await loadContent();
   const save = new SaveManager('princefarmer-save');
   await save._ready();
@@ -1352,18 +1343,20 @@ async function boot() {
     dungeon: dungeonScene,
   });
 
-  // Hook the state machine into the LittleJS update loop.
-  // LittleJS calls this every frame with dt in seconds.
-  // We attach via a tiny wrapper that calls sm.update(dt).
-  // Note: LittleJS does not expose a public onUpdate hook in v1.7; we
-  // therefore wrap the global tick. Future plans may replace this
-  // with engineObjects when entities are introduced (M1+).
-  const originalTick = globalThis.gameUpdate;
-  globalThis.gameUpdate = function () {
-    const dt = 1 / 60; // placeholder; replaced when LittleJS exposes dt
-    sm.update(dt);
-    if (originalTick) originalTick();
-  };
+  // Mount LittleJS v1.18 with the canvas as the root element and
+  // route the per-frame gameUpdate callback into our state machine.
+  // LittleJS exposes the frame's delta time as the `timeDelta` export.
+  // Future plans (M1+) will add real scene rendering by populating
+  // the gameRender callback and creating engineObjects for entities.
+  engineInit(
+    undefined,                              // gameInit (no async init needed)
+    () => sm.update(timeDelta),             // gameUpdate
+    undefined,                              // gameUpdatePost
+    undefined,                              // gameRender
+    undefined,                              // gameRenderPost
+    [],                                     // imageSources
+    canvas                                  // rootElement
+  );
 
   // Expose for the Playwright E2E test to drive transitions.
   window.__pf = { db, save, sm, transition: (s) => sm.transition(s) };
@@ -1378,6 +1371,15 @@ boot().catch((err) => {
   throw err;
 });
 ```
+
+> **Note:** This task was originally written against LittleJS v1.7's API
+> (`setCanvasFixedSize(canvas)` + `engineInit(canvas, ...)`). The installed
+> version (`littlejsengine@1.18.17`) changed the API:
+> - `engineInit` now takes callbacks positionally and an optional `rootElement` as the 7th arg.
+> - `setCanvasFixedSize(size)` takes a `Vector2` (which needs a `.copy()` method), not a canvas.
+> - `timeDelta` is now a top-level export from `littlejsengine`, not a parameter to the update callback.
+>
+> The code above uses the v1.18 API.
 
 - [ ] **Step 2: Run the unit tests to confirm nothing regressed**
 
