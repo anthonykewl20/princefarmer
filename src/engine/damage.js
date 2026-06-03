@@ -26,3 +26,15 @@ export function calculateFallDamage(distance) {
   const t = (distance - SAFE_FALL_HEIGHT) / (LETHAL_FALL_HEIGHT - SAFE_FALL_HEIGHT);
   return Math.round(MAX_HP * t);
 }
+
+/**
+ * Apply a base damage roll, possibly with a 1.5x crit.
+ * Crit chance: 10% (rng() < 0.1).
+ * @param {number} base
+ * @param {() => number} rng - seeded RNG returning [0, 1)
+ * @returns {number} final damage (integer)
+ */
+export function applyDamageWithCrit(base, rng) {
+  const isCrit = rng() < 0.1;
+  return Math.floor(base * (isCrit ? 1.5 : 1));
+}
