@@ -13,7 +13,7 @@ import { loadJSON } from './utils/json-loader.js';
 import { GameDB, loadRooms, loadDungeons } from './engine/gamedb.js';
 import { SaveManager } from './persistence/save.js';
 import { StateMachine } from './scenes/state-machine.js';
-import { titleScene } from './scenes/title.js';
+import { titleScene, setTitleStateMachine } from './scenes/title.js';
 import { hubScene } from './scenes/hub.js';
 import { dungeonScene, setDungeons } from './scenes/dungeon.js';
 import { registerServiceWorker } from './sw-register.js';
@@ -40,6 +40,8 @@ async function boot() {
     hub: hubScene,
     dungeon: dungeonScene,
   });
+
+  setTitleStateMachine(sm);
 
   // Mount LittleJS v1.18 with the canvas as the root element and
   // route the per-frame gameUpdate callback into our state machine.
