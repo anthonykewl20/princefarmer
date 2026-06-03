@@ -77,4 +77,16 @@ export class SaveManager {
       tx.onerror = () => reject(tx.error);
     });
   }
+
+  /**
+   * Static convenience: open a default SaveManager and write the data.
+   * For game-level saves, you don't need a custom dbName.
+   * @param {object} data
+   * @returns {Promise<void>}
+   */
+  static async save(data) {
+    const mgr = new SaveManager('princefarmer-save');
+    await mgr._ready();
+    return mgr.write(data);
+  }
 }
