@@ -1,0 +1,9 @@
+{
+  "name": "PrinceFarmer",
+  "basePrompt": "modern pixel art, 16x24 character sprite, limited 16-color palette, warm earth tones (browns/reds/golds), dark fantasy Filipino, painted-by-Frank-Solleveld-style pixel polish, no anti-aliasing, hard pixel edges",
+  "styleAnchor": "../../assets/reference/lakan-alon-style-anchor.png",
+  "heroNotes": "bare-chested Filipino warrior, red headband with trailing cloth, dark hair, gold earrings and arm bands, intricate tribal tattoos on chest and arms, red-and-white woven wrap around waist, bare feet, lean muscular build, fierce expression",
+  "weaponNotes": "Filipino kampilan (curved single-edged sword with elaborate hilt) and traditional round shield with red tassels, wooden spear",
+  "monsterNotes": "Filipino folklore creatures, distinctive silhouettes, glowing eyes for horror",
+  "environmentNotes": "stone temple platforms overgrown with vines, deep jungle greens, dappled light"
+}

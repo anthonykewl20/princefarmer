@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "assets": [
+    { "id": "hero/idle/0", "type": "hero", "anim": "idle", "frame": 0, "status": "missing", "file": "assets/sprites/hero/idle/0.png", "size": [16, 24] },
+    { "id": "hero/idle/1", "type": "hero", "anim": "idle", "frame": 1, "status": "missing", "file": "assets/sprites/hero/idle/1.png", "size": [16, 24] },
+    { "id": "hero/idle/2", "type": "hero", "anim": "idle", "frame": 2, "status": "missing", "file": "assets/sprites/hero/idle/2.png", "size": [16, 24] },
+    { "id": "hero/idle/3", "type": "hero", "anim": "idle", "frame": 3, "status": "missing", "file": "assets/sprites/hero/idle/3.png", "size": [16, 24] },
+    { "id": "hero/run/0", "type": "hero", "anim": "run", "frame": 0, "status": "missing", "file": "assets/sprites/hero/run/0.png", "size": [16, 24] },
+    { "id": "hero/run/1", "type": "hero", "anim": "run", "frame": 1, "status": "missing", "file": "assets/sprites/hero/run/1.png", "size": [16, 24] },
+    { "id": "hero/run/2", "type": "hero", "anim": "run", "frame": 2, "status": "missing", "file": "assets/sprites/hero/run/2.png", "size": [16, 24] },
+    { "id": "hero/run/3", "type": "hero", "anim": "run", "frame": 3, "status": "missing", "file": "assets/sprites/hero/run/3.png", "size": [16, 24] },
+    { "id": "hero/run/4", "type": "hero", "anim": "run", "frame": 4, "status": "missing", "file": "assets/sprites/hero/run/4.png", "size": [16, 24] },
+    { "id": "hero/run/5", "type": "hero", "anim": "run", "frame": 5, "status": "missing", "file": "assets/sprites/hero/run/5.png", "size": [16, 24] },
+    { "id": "hero/jump/0", "type": "hero", "anim": "jump", "frame": 0, "status": "missing", "file": "assets/sprites/hero/jump/0.png", "size": [16, 24] },
+    { "id": "hero/jump/1", "type": "hero", "anim": "jump", "frame": 1, "status": "missing", "file": "assets/sprites/hero/jump/1.png", "size": [16, 24] },
+    { "id": "hero/climb/0", "type": "hero", "anim": "climb", "frame": 0, "status": "missing", "file": "assets/sprites/hero/climb/0.png", "size": [16, 24] },
+    { "id": "hero/climb/1", "type": "hero", "anim": "climb", "frame": 1, "status": "missing", "file": "assets/sprites/hero/climb/1.png", "size": [16, 24] },
+    { "id": "hero/hurt/0", "type": "hero", "anim": "hurt", "frame": 0, "status": "missing", "file": "assets/sprites/hero/hurt/0.png", "size": [16, 24] },
+    { "id": "hero/death/0", "type": "hero", "anim": "death", "frame": 0, "status": "missing", "file": "assets/sprites/hero/death/0.png", "size": [16, 24] },
+    { "id": "hero/death/1", "type": "hero", "anim": "death", "frame": 1, "status": "missing", "file": "assets/sprites/hero/death/1.png", "size": [16, 24] },
+    { "id": "hero/death/2", "type": "hero", "anim": "death", "frame": 2, "status": "missing", "file": "assets/sprites/hero/death/2.png", "size": [16, 24] },
+    { "id": "hero/death/3", "type": "hero", "anim": "death", "frame": 3, "status": "missing", "file": "assets/sprites/hero/death/3.png", "size": [16, 24] }
+  ]
+}
