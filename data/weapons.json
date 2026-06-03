@@ -1,0 +1,17 @@
+[
+  {
+    "id": "kampilan",
+    "name": "Kampilan",
+    "type": "melee",
+    "element": "spirit",
+    "spriteRef": "weapons/kampilan",
+    "autoAttack": {
+      "range": 1.2,
+      "shape": "arc",
+      "arc": 1.5707963267948966,
+      "tick": 0.6,
+      "damage": 20
+    },
+    "abilities": ["lunging-strike"]
+  }
+]
