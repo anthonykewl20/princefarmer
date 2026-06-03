@@ -15,7 +15,7 @@ import { SaveManager } from './persistence/save.js';
 import { StateMachine } from './scenes/state-machine.js';
 import { titleScene } from './scenes/title.js';
 import { hubScene } from './scenes/hub.js';
-import { dungeonScene } from './scenes/dungeon.js';
+import { dungeonScene, setDungeons } from './scenes/dungeon.js';
 import { registerServiceWorker } from './sw-register.js';
 
 const canvas = document.getElementById('game-canvas');
@@ -31,6 +31,7 @@ function loadContent() {
 
 async function boot() {
   const { rooms, dungeons } = loadContent();
+  setDungeons(dungeons);
   const save = new SaveManager('princefarmer-save');
   await save._ready();
 
@@ -54,7 +55,11 @@ async function boot() {
   );
 
   // Expose for the Playwright E2E test to drive transitions.
-  window.__pf = { db: rooms, save, sm, transition: (s) => sm.transition(s), rooms, dungeons };
+  window.__pf = {
+    db: rooms, save, sm, rooms, dungeons,
+    transition: (s, ctx) => sm.transition(s, ctx),
+    enterDungeon: (id) => sm.transition('dungeon', { dungeonId: id, rooms, hubTransition: () => sm.transition('hub') }),
+  };
 
   registerServiceWorker();
 
