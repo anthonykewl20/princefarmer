@@ -172,3 +172,20 @@ describe('player climbing', () => {
     expect(p.fallDistance).toBe(0);
   });
 });
+
+describe('player M2 fields', () => {
+  it('initializes weapon state with zero cooldowns', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.weapon).toBeTruthy();
+    expect(p.weapon.lastAttackTime).toBe(0);
+    expect(p.weapon.lastAbilityTime).toBe(0);
+  });
+
+  it('initializes xp, level, attackPower with M2 defaults', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.xp).toBe(0);
+    expect(p.level).toBe(1);
+    expect(p.attackPower).toBe(1);
+    expect(p.pendingLevelUp).toBe(false);
+  });
+});
