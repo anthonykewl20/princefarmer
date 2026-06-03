@@ -20,14 +20,15 @@ export class StateMachine {
   get current() { return this._current; }
 
   /**
-   * Transition to a new state. Calls `exit()` on the old state, then `enter()` on the new.
+   * Transition to a new state. Calls `exit()` on the old state, then `enter(ctx)` on the new.
    * @param {string} name
+   * @param {object} [ctx] - optional context object forwarded to the new state's enter()
    */
-  transition(name) {
+  transition(name, ctx) {
     if (!this._states[name]) throw new Error(`StateMachine: unknown state "${name}"`);
     this._states[this._current].exit?.();
     this._current = name;
-    this._states[name].enter?.();
+    this._states[name].enter?.(ctx);
   }
 
   /**

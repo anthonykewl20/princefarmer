@@ -17,9 +17,9 @@ test.describe('PrinceFarmer smoke test', () => {
     expect(await page.evaluate(() => window.__pf.sm.current)).toBe('hub');
     expect(consoleMessages).toContain('[scene] enter: hub');
 
-    await page.evaluate(() => window.__pf.transition('dungeon'));
+    await page.evaluate(() => window.__pf.enterDungeon('01-stub-sandbox'));
     expect(await page.evaluate(() => window.__pf.sm.current)).toBe('dungeon');
-    expect(consoleMessages).toContain('[scene] enter: dungeon');
+    expect(consoleMessages).toContain('[dungeon] enter: 01-stub-sandbox (room 01-stub-sandbox)');
 
     await page.evaluate(() => window.__pf.transition('hub'));
     expect(await page.evaluate(() => window.__pf.sm.current)).toBe('hub');
