@@ -1,0 +1,26 @@
+{
+  "name": "princefarmer",
+  "version": "0.0.0",
+  "description": "A side-scrolling pixel-art adventure blending Prince of Persia, Vampire Survivors, and Albion Online",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "gen-assets": "node tools/asset-gen/gen.js"
+  },
+  "dependencies": {
+    "littlejsengine": "^1.7.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "fake-indexeddb": "^6.0.0",
+    "jsdom": "^24.0.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}
