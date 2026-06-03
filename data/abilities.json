@@ -1,0 +1,16 @@
+[
+  {
+    "id": "lunging-strike",
+    "name": "Lunging Strike",
+    "element": "spirit",
+    "damage": 30,
+    "cooldown": 3.0,
+    "range": 2.0,
+    "aoe": {
+      "shape": "arc",
+      "arc": 1.5707963267948966,
+      "radius": 1.0
+    },
+    "fxRef": "fx/lunge"
+  }
+]
