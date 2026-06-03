@@ -1,13 +1,68 @@
 /**
- * Hub scene (placeholder).
+ * Hub scene.
  *
- * In M0 this just logs a message. In future milestones it will render
- * the village hub, allow entering dungeons, view inventory, and access
- * crafting (added in a later project).
+ * For M1, the hub is a small flat area with a single dungeon entrance.
+ * Walking up to the entrance and pressing E transitions to the dungeon.
+ *
+ * Future: NPCs, farming plots, marketplace.
  */
+
+import { createInput } from '../engine/input.js';
+
+let sm = null;
+let enterDungeon = null;
+export function setHubStateMachine(s) { sm = s; }
+export function setEnterDungeon(fn) { enterDungeon = fn; }
+
+const ENTRANCE_X = 5;
+const ENTRANCE_Y = 1;
+const ENTRANCE_RADIUS = 1.5;
+
 export const hubScene = {
   name: 'hub',
-  enter() { console.log('[scene] enter: hub'); },
-  exit() { console.log('[scene] exit: hub'); },
-  update(_dt) { /* no-op in M0 */ },
+  enter() {
+    console.log('[scene] enter: hub');
+    this._input = createInput(globalThis);
+    this._playerX = 0;
+    this._playerY = 1;
+  },
+  exit() {
+    console.log('[scene] exit: hub');
+    this._input = null;
+  },
+  update(dt) {
+    if (this._input.isPressed('left')) this._playerX -= 3 * dt;
+    if (this._input.isPressed('right')) this._playerX += 3 * dt;
+    if (this._input.isPressed('up')) this._playerY += 3 * dt;
+    if (this._input.isPressed('down')) this._playerY -= 3 * dt;
+
+    const dx = this._playerX - ENTRANCE_X;
+    const dy = this._playerY - ENTRANCE_Y;
+    const nearEntrance = Math.hypot(dx, dy) < ENTRANCE_RADIUS;
+
+    if (nearEntrance && this._input.wasJustPressed('interact')) {
+      if (enterDungeon) enterDungeon('01-stub-sandbox');
+    }
+  },
+  render(ctx) {
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    ctx.fillStyle = '#1a2a1a';
+    ctx.fillRect(0, 0, w, h);
+    // Dungeon entrance
+    ctx.fillStyle = '#5a2a5a';
+    ctx.fillRect(ENTRANCE_X - 0.5, ENTRANCE_Y - 1, 1, 2);
+    // Player
+    ctx.fillStyle = '#f4c089';
+    ctx.fillRect(this._playerX - 0.3, this._playerY - 0.6, 0.6, 0.6);
+    // Prompt
+    const dx = this._playerX - ENTRANCE_X;
+    const dy = this._playerY - ENTRANCE_Y;
+    if (Math.hypot(dx, dy) < ENTRANCE_RADIUS) {
+      ctx.fillStyle = '#f0f0f0';
+      ctx.font = '20px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('Press E to enter', ENTRANCE_X, ENTRANCE_Y + 2);
+    }
+  },
 };
