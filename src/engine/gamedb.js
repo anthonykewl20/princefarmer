@@ -5,6 +5,12 @@
  * All items must have a unique `id` field. Use `get(id)` to retrieve,
  * `idsWhere(predicate)` to filter, and `register`/`registerMany` to add.
  */
+
+// Vite glob imports — these resolve at build time to all matching JSON files.
+// Each is a map: { './path/to/file.json': ModuleObject }.
+const roomModules = import.meta.glob('../../data/rooms/*.json', { eager: true });
+const dungeonModules = import.meta.glob('../../data/dungeons/*.json', { eager: true });
+
 export class GameDB {
   constructor() {
     this._items = new Map();
@@ -56,4 +62,22 @@ export class GameDB {
 
   /** Total registered items. */
   get size() { return this._items.size; }
+}
+
+/** Load all room JSON into a new GameDB. */
+export function loadRooms() {
+  const db = new GameDB();
+  for (const mod of Object.values(roomModules)) {
+    db.register(mod.id, mod);
+  }
+  return db;
+}
+
+/** Load all dungeon JSON into a new GameDB. */
+export function loadDungeons() {
+  const db = new GameDB();
+  for (const mod of Object.values(dungeonModules)) {
+    db.register(mod.id, mod);
+  }
+  return db;
 }

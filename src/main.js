@@ -10,7 +10,7 @@
 
 import { engineInit, timeDelta } from 'littlejsengine';
 import { loadJSON } from './utils/json-loader.js';
-import { GameDB } from './engine/gamedb.js';
+import { GameDB, loadRooms, loadDungeons } from './engine/gamedb.js';
 import { SaveManager } from './persistence/save.js';
 import { StateMachine } from './scenes/state-machine.js';
 import { titleScene } from './scenes/title.js';
@@ -21,13 +21,16 @@ import { registerServiceWorker } from './sw-register.js';
 const canvas = document.getElementById('game-canvas');
 if (!canvas) throw new Error('game-canvas not found in DOM');
 
-/** Loads all JSON files in /data and registers them into the GameDB. */
-async function loadContent() {
-  return new GameDB();
+/** Loads all room + dungeon JSON into GameDBs. */
+function loadContent() {
+  return {
+    rooms: loadRooms(),
+    dungeons: loadDungeons(),
+  };
 }
 
 async function boot() {
-  const db = await loadContent();
+  const { rooms, dungeons } = loadContent();
   const save = new SaveManager('princefarmer-save');
   await save._ready();
 
@@ -51,7 +54,7 @@ async function boot() {
   );
 
   // Expose for the Playwright E2E test to drive transitions.
-  window.__pf = { db, save, sm, transition: (s) => sm.transition(s) };
+  window.__pf = { db: rooms, save, sm, transition: (s) => sm.transition(s), rooms, dungeons };
 
   registerServiceWorker();
 
