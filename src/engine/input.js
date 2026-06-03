@@ -19,6 +19,7 @@ export const KEY_BINDINGS = {
   jump:    ['Space'],
   escape:  ['Escape'],
   interact: ['KeyE', 'Enter'],
+  attack2: ['KeyQ', 'ShiftLeft'],
 };
 
 /**
