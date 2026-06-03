@@ -56,6 +56,22 @@ async function callPixelLab(prompt, size, styleAnchorPath) {
   const apiKey = process.env.PIXELLAB_API_KEY;
   if (!apiKey) throw new Error('PIXELLAB_API_KEY env var is required');
 
+  // The PixelLab API can't reach the local filesystem, so if a style
+  // anchor is configured we read it and inline it as a data URL.
+  // The path in style-guide.json is relative to the project root, so
+  // resolve it from __dirname (this script lives at tools/asset-gen/).
+  let styleAnchorBase64 = null;
+  if (styleAnchorPath) {
+    const fullPath = join(__dirname, '..', '..', styleAnchorPath);
+    if (existsSync(fullPath)) {
+      const ext = fullPath.split('.').pop().toLowerCase();
+      const mime = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/png';
+      styleAnchorBase64 = `data:${mime};base64,${readFileSync(fullPath).toString('base64')}`;
+    } else {
+      console.warn(`  style anchor not found at ${fullPath}, continuing without it`);
+    }
+  }
+
   // The exact endpoint/payload will be confirmed during M1.9 (test sprite).
   // This is the v1 starter: a basic image generation call.
   const res = await fetch(`${API_BASE}/generate-image`, {
@@ -68,7 +84,7 @@ async function callPixelLab(prompt, size, styleAnchorPath) {
       prompt,
       width: size[0],
       height: size[1],
-      style_anchor: styleAnchorPath,
+      style_anchor: styleAnchorBase64,
     }),
   });
   if (!res.ok) {

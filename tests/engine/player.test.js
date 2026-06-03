@@ -131,4 +131,44 @@ describe('player climbing', () => {
     p.update(0.016);
     expect(p.isClimbing).toBe(false);
   });
+
+  it('does NOT lock out horizontal movement when overlapping a ladder but not pressing up/down (regression: ladder lock-out)', () => {
+    const input = { isPressed: (a) => a === 'right', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 5, input);
+    p.onLadder = true; // overlapping a ladder
+    p.update(0.016);
+    // Should run right, NOT be stuck on the ladder
+    expect(p.isClimbing).toBe(false);
+    expect(p.vx).toBeGreaterThan(0);
+  });
+
+  it('does NOT lock out jump when overlapping a ladder but not pressing up/down (regression: ladder lock-out)', () => {
+    const input = { isPressed: () => false, wasJustPressed: (a) => a === 'jump', endFrame: () => {} };
+    const p = createPlayer(0, 10, input);
+    p.onLadder = true; // overlapping a ladder
+    p.onGround = true;
+    p.update(0.016);
+    expect(p.isClimbing).toBe(false);
+    expect(p.vy).toBeCloseTo(JUMP_IMPULSE, 5);
+  });
+
+  it('jump while climbing exits climbing state and gives the jump impulse', () => {
+    const input = { isPressed: (a) => a === 'up', wasJustPressed: (a) => a === 'jump', endFrame: () => {} };
+    const p = createPlayer(0, 5, input);
+    p.onLadder = true;
+    p.onGround = true;
+    p.update(0.016);
+    expect(p.isClimbing).toBe(false);
+    expect(p.vy).toBeCloseTo(JUMP_IMPULSE, 5);
+  });
+
+  it('does NOT accumulate fallDistance while climbing down (regression: ladder fall damage)', () => {
+    const input = { isPressed: (a) => a === 'down', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 5, input);
+    p.onLadder = true;
+    p.isClimbing = true;
+    // After several frames of climbing down, fallDistance should stay at 0
+    for (let i = 0; i < 10; i++) p.update(0.016);
+    expect(p.fallDistance).toBe(0);
+  });
 });

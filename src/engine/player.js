@@ -56,20 +56,30 @@ export function updatePlayer(p, dt) {
   if (p.isDead) return;
   p.prevY = p.y;
 
-  // Climbing takes priority over gravity
+  // Climbing state toggle: only climb while on a ladder AND pressing up/down.
+  // Overlapping a ladder without pressing up/down should NOT lock out horizontal
+  // movement or jumping — the player can walk past or jump off the ladder.
   if (p.onLadder) {
-    p.isClimbing = p.input.isPressed('up') || p.input.isPressed('down');
-    if (p.isClimbing) {
-      if (p.input.isPressed('up')) p.vy = -CLIMB_SPEED;
-      else if (p.input.isPressed('down')) p.vy = CLIMB_SPEED;
-      else p.vy = 0;
-      p.vx = 0; // can't move horizontally while climbing
-    } else {
-      // Standing on a ladder but not pressing up/down
-      applyGravity(p, DEFAULT_GRAVITY, dt);
+    if (p.input.isPressed('up') || p.input.isPressed('down')) {
+      p.isClimbing = true;
     }
   } else {
     p.isClimbing = false;
+  }
+
+  if (p.isClimbing) {
+    if (p.input.isPressed('up')) p.vy = -CLIMB_SPEED;
+    else if (p.input.isPressed('down')) p.vy = CLIMB_SPEED;
+    else p.vy = 0;
+    p.vx = 0; // can't move horizontally while climbing
+
+    // Jump off the ladder to exit climbing
+    if (p.input.wasJustPressed('jump')) {
+      p.isClimbing = false;
+      p.vy = JUMP_IMPULSE;
+      p.onGround = false;
+    }
+  } else {
     // Horizontal: accelerate toward target run speed based on input
     let targetVx = 0;
     if (p.input.isPressed('left')) targetVx -= MAX_RUN_SPEED;
@@ -103,10 +113,13 @@ export function updatePlayer(p, dt) {
   // Integrate
   integrate(p, dt);
 
-  // Track fall distance (for damage calc in the dungeon scene)
-  if (p.vy > 0) {
+  // Track fall distance (for damage calc in the dungeon scene).
+  // Don't accumulate while climbing — climbing down sets vy > 0, but
+  // the player is on a ladder, not falling. Reset to 0 while climbing
+  // so a ladder descent can't end in lethal "fall" damage.
+  if (p.vy > 0 && !p.isClimbing) {
     p.fallDistance += p.vy * dt;
-  } else if (p.onGround) {
+  } else if (p.onGround || p.isClimbing) {
     p.fallDistance = 0;
   }
 

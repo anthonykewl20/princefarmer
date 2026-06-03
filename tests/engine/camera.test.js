@@ -24,14 +24,34 @@ describe('camera', () => {
       expect(cam.y).toBe(0);
     });
 
-    it('clamps to room bounds horizontally', () => {
+    it('clamps to room bounds horizontally (regression: camera coord space)', () => {
       const smallRoom = { width: 50, height: 60 };
       const c = createCamera({ x: 0, y: 0 }, smallRoom);
       // Trying to track a target far to the right of a small room
       updateCamera(c, { x: 1000, y: 0 }, 1, 1);
-      // Camera x should not exceed room width / 2 (assuming camera is centered on target)
-      // (depends on framing logic — for M1 we center on target)
-      expect(c.x).toBeLessThanOrEqual(smallRoom.width / 2);
+      // Camera x should be clamped to [0, room.width], not centered on (0,0)
+      expect(c.x).toBeLessThanOrEqual(smallRoom.width);
+      expect(c.x).toBeGreaterThanOrEqual(0);
+    });
+
+    it('clamps to room bounds vertically (regression: camera coord space)', () => {
+      const smallRoom = { width: 50, height: 60 };
+      const c = createCamera({ x: 0, y: 0 }, smallRoom);
+      // Trying to track a target far below a small room
+      updateCamera(c, { x: 0, y: 1000 }, 1, 1);
+      expect(c.y).toBeLessThanOrEqual(smallRoom.height);
+      expect(c.y).toBeGreaterThanOrEqual(0);
+    });
+
+    it('follows target within room bounds without clamping (regression: camera coord space)', () => {
+      const room = { width: 100, height: 60 };
+      const c = createCamera({ x: 10, y: 10 }, room);
+      updateCamera(c, { x: 20, y: 20 }, 1, 1);
+      // Target is inside the room; camera should move toward it but stay clamped
+      expect(c.x).toBeGreaterThan(10);
+      expect(c.x).toBeLessThanOrEqual(20);
+      expect(c.y).toBeGreaterThan(10);
+      expect(c.y).toBeLessThanOrEqual(20);
     });
   });
 

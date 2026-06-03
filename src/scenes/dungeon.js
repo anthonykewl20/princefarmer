@@ -80,22 +80,34 @@ export const dungeonScene = {
     const p = this._player;
     const grid = this._grid;
 
-    // Sample tile under player feet (for onGround + onLadder)
+    // Sample tile under player feet (for onGround + onLadder).
+    // onGround is only set when the player is falling or stationary
+    // (vy >= 0) — otherwise the very frame the player jumps, the
+    // post-movement snap would zero out their upward velocity.
     const footCol = Math.floor(p.x / TILE_SIZE);
     const footRow = Math.floor((p.y + 0.5) / TILE_SIZE);
     const footTile = getTile(grid, footCol, footRow);
     p.onLadder = footTile === TILE_LADDER;
-    p.onGround = footTile === TILE_SOLID;
+    p.onGround = footTile === TILE_SOLID && p.vy >= 0;
 
     // Drive player
     updatePlayer(p, dt);
 
-    // Re-sample after movement
+    // Re-sample after movement. Same vy >= 0 guard as above: a player
+    // moving upward through a tile below their feet is NOT onGround.
     const newFootCol = Math.floor(p.x / TILE_SIZE);
     const newFootRow = Math.floor((p.y + 0.5) / TILE_SIZE);
     const newFootTile = getTile(grid, newFootCol, newFootRow);
     p.onLadder = newFootTile === TILE_LADDER;
-    p.onGround = newFootTile === TILE_SOLID;
+    p.onGround = newFootTile === TILE_SOLID && p.vy >= 0;
+
+    // Resolve vertical collision on landing: snap the player's bottom to the
+    // top of the solid tile and zero out vertical velocity so the player
+    // doesn't sink into or fall through solid ground.
+    if (p.onGround) {
+      p.y = newFootRow * TILE_SIZE;
+      p.vy = 0;
+    }
 
     // Fall damage on landing
     if (p.fallDistance > FALL_DAMAGE_THRESHOLD && p.onGround) {
@@ -133,8 +145,12 @@ export const dungeonScene = {
     const p = this._player;
     ctx.fillStyle = '#f4c089';
     ctx.fillRect(p.x - 0.4, p.y - 0.8, 0.8, 0.8);
-    // HUD
-    drawHud(ctx, p, 4, 0.4, -this._camera.x + 0.5, -this._camera.y + 0.5);
+    // HUD is drawn in pixel space, so reset the world transform first
+    // (otherwise a 1-pixel border renders as a whole tile thick).
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    drawHud(ctx, p);
+    ctx.restore();
   },
 };
 

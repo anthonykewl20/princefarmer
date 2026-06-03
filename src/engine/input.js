@@ -65,19 +65,16 @@ export function createInput(win) {
 
   /**
    * True only on the frame the action transitioned to pressed.
-   * Self-clearing: a second poll without a new press returns false.
-   * Call endFrame() at the end of each frame to clear any unpollled flags.
+   * Multi-consumer safe: multiple polls in the same frame all see the
+   * press; `endFrame()` (called once per game frame) is the only thing
+   * that clears the flag.
    * @param {string} action
    * @returns {boolean}
    */
   function wasJustPressed(action) {
     const codes = KEY_BINDINGS[action];
     if (!codes) return false;
-    const hit = codes.some((c) => justPressed.has(c));
-    if (hit) {
-      for (const c of codes) justPressed.delete(c);
-    }
-    return hit;
+    return codes.some((c) => justPressed.has(c));
   }
 
   /** Clear the just-pressed flags. Call at end of each game frame. */

@@ -33,8 +33,8 @@ export const hubScene = {
   update(dt) {
     if (this._input.isPressed('left')) this._playerX -= 3 * dt;
     if (this._input.isPressed('right')) this._playerX += 3 * dt;
-    if (this._input.isPressed('up')) this._playerY += 3 * dt;
-    if (this._input.isPressed('down')) this._playerY -= 3 * dt;
+    if (this._input.isPressed('up')) this._playerY -= 3 * dt;
+    if (this._input.isPressed('down')) this._playerY += 3 * dt;
 
     const dx = this._playerX - ENTRANCE_X;
     const dy = this._playerY - ENTRANCE_Y;
@@ -49,20 +49,30 @@ export const hubScene = {
     const h = ctx.canvas.height;
     ctx.fillStyle = '#1a2a1a';
     ctx.fillRect(0, 0, w, h);
+
+    // World elements are drawn in world units (1 unit ≈ 1 tile). Scale the
+    // canvas so they're visible at the chosen viewport resolution.
+    ctx.save();
+    const scale = 64;
+    ctx.scale(scale, scale);
+
     // Dungeon entrance
     ctx.fillStyle = '#5a2a5a';
     ctx.fillRect(ENTRANCE_X - 0.5, ENTRANCE_Y - 1, 1, 2);
     // Player
     ctx.fillStyle = '#f4c089';
     ctx.fillRect(this._playerX - 0.3, this._playerY - 0.6, 0.6, 0.6);
-    // Prompt
+
+    ctx.restore();
+
+    // Prompt (in pixel space so the text is readable)
     const dx = this._playerX - ENTRANCE_X;
     const dy = this._playerY - ENTRANCE_Y;
     if (Math.hypot(dx, dy) < ENTRANCE_RADIUS) {
       ctx.fillStyle = '#f0f0f0';
       ctx.font = '20px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('Press E to enter', ENTRANCE_X, ENTRANCE_Y + 2);
+      ctx.fillText('Press E to enter', ENTRANCE_X * scale, (ENTRANCE_Y + 2) * scale);
     }
   },
 };
