@@ -6,7 +6,9 @@
  * template, not a hard-coded check in the scene.
  */
 
-import { applyDamageWithCrit } from './damage.js';
+// Note: crit roll and damage are computed locally in `applyHit` so the
+// `attacker.attackPower` modifier can be applied before the crit check,
+// keeping the formula explicit.
 
 /**
  * Check whether a target is inside an attacker's hit shape.
@@ -36,7 +38,7 @@ export function resolveShape(attacker, target, shape) {
   }
 
   if (shape.shape === 'line') {
-    if (dist > (shape.range ?? Infinity)) return false;
+    if (Math.abs(dx) > (shape.range ?? Infinity)) return false;
     // distance from the line (attacker → (attacker.x + facing*range, attacker.y))
     // The line is horizontal here (y stays at attacker.y). thickness is the
     // half-width of the line hitbox.
@@ -48,16 +50,23 @@ export function resolveShape(attacker, target, shape) {
 
 /**
  * Apply a hit to a target with crit rolled by the supplied RNG.
- * @param {{hp:number,maxHp:number,isDead?:boolean}} target
+ *
+ * Damage formula: `floor(base * (1 + 0.1 * (attackPower - 1)) * (isCrit ? 1.5 : 1))`
+ * Crit chance: 10% (rng() < 0.1).
+ *
+ * @param {{hp:number,maxHp:number,isDead?:boolean}} target - mutated in
+ *   place: `hp` is reduced, `isDead` is set when `hp` reaches 0.
  * @param {number} baseDamage
  * @param {{attackPower:number}} attacker
  * @param {() => number} rng - seeded RNG returning [0, 1)
  * @returns {{damage:number, crit:boolean, killed:boolean}}
  */
 export function applyHit(target, baseDamage, attacker, rng) {
-  const damage = applyDamageWithCrit(baseDamage, rng);
+  const isCrit = rng() < 0.1;
+  const attackModifier = 1 + 0.1 * (attacker.attackPower - 1);
+  const damage = Math.floor(baseDamage * attackModifier * (isCrit ? 1.5 : 1));
   target.hp = Math.max(0, target.hp - damage);
   const killed = target.hp === 0;
   if (killed) target.isDead = true;
-  return { damage, crit: damage > baseDamage, killed };
+  return { damage, crit: isCrit, killed };
 }
