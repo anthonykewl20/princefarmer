@@ -41,16 +41,13 @@ export function updateCamera(cam, target, dt, lerp = DEFAULT_LERP) {
   cam.x += (target.x - cam.x) * t;
   cam.y += (target.y - cam.y) * t;
 
-  // Clamp to room bounds (camera is centered on the target by default;
-  // clamp by half-room so the camera doesn't see past the room edges)
-  const halfW = cam.room.width / 2;
-  const halfH = cam.room.height / 2;
-  // Only clamp when the room is bigger than the viewport; for the M1 stub
-  // room this is usually a no-op.
+  // Clamp to room bounds. Room coordinates span [0, width] and [0, height]
+  // (player spawns at positive coords, tiles drawn at positive offsets),
+  // so clamp the camera within those bounds rather than centering on (0,0).
   if (cam.room.width > 0) {
-    cam.x = Math.max(-halfW, Math.min(halfW, cam.x));
+    cam.x = Math.max(0, Math.min(cam.room.width, cam.x));
   }
   if (cam.room.height > 0) {
-    cam.y = Math.max(-halfH, Math.min(halfH, cam.y));
+    cam.y = Math.max(0, Math.min(cam.room.height, cam.y));
   }
 }
