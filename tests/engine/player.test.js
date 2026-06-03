@@ -1,0 +1,134 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { createPlayer, MAX_HP, MAX_RUN_SPEED, JUMP_IMPULSE, CLIMB_SPEED, FALL_DAMAGE_THRESHOLD } from '../../src/engine/player.js';
+
+describe('player constants', () => {
+  it('exports tunables', () => {
+    expect(MAX_HP).toBe(100);
+    expect(MAX_RUN_SPEED).toBeGreaterThan(0);
+    expect(JUMP_IMPULSE).toBeLessThan(0); // upward, so negative vy
+    expect(CLIMB_SPEED).toBeGreaterThan(0);
+    expect(FALL_DAMAGE_THRESHOLD).toBeGreaterThan(0);
+  });
+});
+
+describe('createPlayer', () => {
+  let p;
+  beforeEach(() => {
+    p = createPlayer(5, 10, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+  });
+
+  it('starts with full HP at the given position', () => {
+    expect(p.hp).toBe(MAX_HP);
+    expect(p.x).toBe(5);
+    expect(p.y).toBe(10);
+    expect(p.facing).toBe(1);
+    expect(p.isClimbing).toBe(false);
+    expect(p.isDead).toBe(false);
+  });
+
+  it('tracks the previous y to compute fall distance', () => {
+    expect(p.prevY).toBe(10);
+  });
+});
+
+describe('player input handling', () => {
+  it('running left sets vx negative when left is pressed', () => {
+    const input = { isPressed: (a) => a === 'left', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 0, input);
+    p.update(0.016);
+    expect(p.vx).toBeLessThan(0);
+  });
+
+  it('running right sets vx positive when right is pressed', () => {
+    const input = { isPressed: (a) => a === 'right', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 0, input);
+    p.update(0.016);
+    expect(p.vx).toBeGreaterThan(0);
+  });
+
+  it('updates facing direction to match horizontal motion', () => {
+    const input = { isPressed: (a) => a === 'right', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 0, input);
+    p.update(0.016);
+    expect(p.facing).toBe(1);
+
+    const input2 = { isPressed: (a) => a === 'left', wasJustPressed: () => false, endFrame: () => {} };
+    const p2 = createPlayer(0, 0, input2);
+    p2.update(0.016);
+    expect(p2.facing).toBe(-1);
+  });
+
+  it('jump sets vy to JUMP_IMPULSE only when onGround', () => {
+    const input = { isPressed: () => false, wasJustPressed: (a) => a === 'jump', endFrame: () => {} };
+    const p = createPlayer(0, 10, input);
+    p.onGround = true;
+    p.update(0.016);
+    expect(p.vy).toBeCloseTo(JUMP_IMPULSE, 5);
+  });
+
+  it('jump is a no-op when airborne', () => {
+    const input = { isPressed: () => false, wasJustPressed: (a) => a === 'jump', endFrame: () => {} };
+    const p = createPlayer(0, 10, input);
+    p.onGround = false;
+    const vyBefore = p.vy;
+    p.update(0.016);
+    expect(p.vy).toBe(vyBefore);
+  });
+});
+
+describe('player damage and death', () => {
+  it('takeDamage reduces HP', () => {
+    const p = createPlayer(0, 0, {});
+    p.takeDamage(30);
+    expect(p.hp).toBe(MAX_HP - 30);
+  });
+
+  it('takeDamage clamps HP to 0', () => {
+    const p = createPlayer(0, 0, {});
+    p.takeDamage(999);
+    expect(p.hp).toBe(0);
+  });
+
+  it('takeDamage marks player as dead when HP reaches 0', () => {
+    const p = createPlayer(0, 0, {});
+    p.takeDamage(MAX_HP);
+    expect(p.isDead).toBe(true);
+  });
+
+  it('heal restores HP up to MAX_HP', () => {
+    const p = createPlayer(0, 0, {});
+    p.takeDamage(50);
+    p.heal(20);
+    expect(p.hp).toBe(MAX_HP - 30);
+    p.heal(999);
+    expect(p.hp).toBe(MAX_HP);
+  });
+});
+
+describe('player climbing', () => {
+  it('sets isClimbing when on a ladder and pressing up', () => {
+    const input = { isPressed: (a) => a === 'up', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 0, input);
+    p.onLadder = true;
+    p.update(0.016);
+    expect(p.isClimbing).toBe(true);
+  });
+
+  it('gravity does not pull player down while climbing', () => {
+    const input = { isPressed: (a) => a === 'up', wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 5, input);
+    p.onLadder = true;
+    p.update(0.016);
+    // vy should be -CLIMB_SPEED (climbing up), not increased by gravity
+    expect(p.vy).toBeCloseTo(-CLIMB_SPEED, 5);
+  });
+
+  it('exits climbing when no longer on a ladder', () => {
+    const input = { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} };
+    const p = createPlayer(0, 5, input);
+    p.onLadder = false;
+    p.isClimbing = true;
+    p.update(0.016);
+    expect(p.isClimbing).toBe(false);
+  });
+});
