@@ -1,0 +1,50 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import 'fake-indexeddb/auto';
+import { SaveManager } from '../../src/persistence/save.js';
+
+describe('SaveManager', () => {
+  let save;
+  beforeEach(async () => {
+    // Clean slate for each test
+    indexedDB = new IDBFactory();
+    save = new SaveManager('princefarmer-save');
+    await save._ready();
+  });
+
+  it('returns null when no save exists', async () => {
+    const data = await save.load();
+    expect(data).toBeNull();
+  });
+
+  it('writes and reads back a save', async () => {
+    const payload = { version: 1, player: { level: 5 } };
+    await save.write(payload);
+    const data = await save.load();
+    expect(data).toEqual(payload);
+  });
+
+  it('overwrites an existing save', async () => {
+    await save.write({ version: 1, player: { level: 1 } });
+    await save.write({ version: 1, player: { level: 2 } });
+    const data = await save.load();
+    expect(data.player.level).toBe(2);
+  });
+
+  it('deletes a save', async () => {
+    await save.write({ version: 1, foo: 1 });
+    await save.delete();
+    expect(await save.load()).toBeNull();
+  });
+
+  it('round-trips a complex object', async () => {
+    const payload = {
+      version: 1,
+      player: { classId: 'lakan-alon', level: 7, stats: { str: 10, dex: 5, int: 3, vit: 8 } },
+      weapons: [{ slot: 'main', id: 'sword', abilitiesPicked: ['cleave', 'parry'] }],
+      passives: [{ id: 'might', stacks: 3 }],
+      clearedDungeons: ['balete-grove', 'dark-forest'],
+    };
+    await save.write(payload);
+    expect(await save.load()).toEqual(payload);
+  });
+});
