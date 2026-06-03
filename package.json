@@ -2,6 +2,9 @@
   "name": "princefarmer",
   "version": "0.0.0",
   "description": "A side-scrolling pixel-art adventure blending Prince of Persia, Vampire Survivors, and Albion Online",
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "private": true,
   "scripts": {
