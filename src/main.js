@@ -14,6 +14,7 @@ import { StateMachine } from './scenes/state-machine.js';
 import { titleScene } from './scenes/title.js';
 import { hubScene } from './scenes/hub.js';
 import { dungeonScene } from './scenes/dungeon.js';
+import { registerServiceWorker } from './sw-register.js';
 
 const canvas = document.getElementById('game-canvas');
 if (!canvas) throw new Error('game-canvas not found in DOM');
@@ -40,6 +41,8 @@ async function boot() {
 
   // Expose for the Playwright E2E test to drive transitions.
   window.__pf = { db, save, sm, transition: (s) => sm.transition(s) };
+
+  registerServiceWorker();
 
   console.log('PrinceFarmer boot OK');
 }
