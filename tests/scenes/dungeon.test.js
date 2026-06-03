@@ -116,6 +116,45 @@ describe('dungeon scene', () => {
     });
   });
 
+  describe('update — combat', () => {
+    it('auto-attack fires when an enemy is in range and on cooldown', () => {
+      const { dungeon, room } = setupDungeon({
+        room: {
+          width: 10, height: 5,
+          spawn: { x: 1, y: 3 },
+          exit: { x: 8, y: 1 },
+          tiles: ['..........', '..........', '..........', '..........', '..........'],
+          props: [],
+          monsterSpawns: [{ monsterId: 'aswang', x: 2, y: 3, count: 1 }],
+        },
+      });
+      const roomObj = { id: 'r1', ...room };
+      setDungeons(new Map([[dungeon.id, dungeon]]));
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[roomObj.id, roomObj]]),
+        weapons: new Map([['kampilan', { id: 'kampilan', autoAttack: { range: 1.2, shape: 'arc', arc: Math.PI / 2, tick: 0.6, damage: 20 }, abilities: [] }]]),
+        monsters: new Map([['aswang', { id: 'aswang', hp: 30, damage: 8, speed: 1.5, contactRange: 0.6, behavior: 'strafe-lunge', drops: [] }]]),
+        abilities: new Map(),
+        hubTransition: vi.fn(),
+      });
+
+      // Set the player's weapon and force a cooldowned state
+      const p = dungeonScene._player;
+      p.weapon.id = 'kampilan';
+      p.weapon.template = dungeonScene._weapons.get('kampilan');
+      p.weapon.lastAttackTime = -1; // long ago, ready to fire
+      p.x = 1; p.y = 3;
+
+      // Player is at (1, 3), aswang at (2, 3) — distance 1.0, in range
+      dungeonScene.update(0.1);
+
+      // The aswang should have taken damage
+      const aswang = dungeonScene._monsters[0];
+      expect(aswang.hp).toBeLessThan(30);
+    });
+  });
+
   describe('update — onGround guard during jump (regression: jump-cancel)', () => {
     it('does NOT set onGround (and does NOT snap to ground) when player is moving upward through a solid tile', () => {
       // Use a room with a solid floor and a 1-tile-thick solid ceiling
