@@ -311,4 +311,47 @@ describe('dungeon scene', () => {
       expect(dungeonScene._player.weapon.template.id).toBe('kampilan');
     });
   });
+
+  describe('update — tier-2 evolution tracking (M3)', () => {
+    it('increments kill count and element damage on hit/kill', () => {
+      const { dungeon, room } = setupDungeon({
+        room: {
+          width: 5, height: 3,
+          spawn: { x: 1, y: 1 },
+          exit: { x: 4, y: 0 },
+          tiles: ['.....', '.....', '#####'],
+          props: [],
+          monsterSpawns: [{ monsterId: 'aswang', x: 2, y: 1, count: 1 }],
+        },
+      });
+      const kampilan = {
+        id: 'kampilan', element: 'spirit',
+        autoAttack: { range: 1.2, shape: 'arc', arc: Math.PI / 2, tick: 0.01, damage: 30 },
+        abilities: ['lunging-strike'],
+      };
+      const aswang = {
+        id: 'aswang', hp: 1, damage: 1, speed: 1, contactRange: 0.6, behavior: 'strafe-lunge', drops: [],
+      };
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', kampilan]]),
+        monsters: new Map([['aswang', aswang]]),
+        passives: new Map(),
+        hubTransition: vi.fn(),
+      });
+      const p = dungeonScene._player;
+      p.x = 1; p.y = 1;
+      p.weapon.template = kampilan;
+      p.weapon.lastAttackTime = -1;
+
+      dungeonScene.update(0.1);
+
+      // The aswang was killed (hp was 1, dmg 30)
+      const state = p.evolutionState.kampilan;
+      expect(state).toBeTruthy();
+      expect(state.kills).toBe(1);
+      expect(state.elementDamage.spirit).toBeGreaterThan(0);
+    });
+  });
 });

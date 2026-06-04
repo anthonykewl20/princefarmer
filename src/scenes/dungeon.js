@@ -24,7 +24,7 @@ import { createMonster } from '../engine/monster.js';
 import { createXpGem } from '../engine/pickup.js';
 import { applyHit, resolveShape } from '../engine/combat.js';
 import { triggerDeath } from '../engine/death.js';
-import { resolveEvolutionTier1, applyLoadout } from '../engine/build.js';
+import { resolveEvolutionTier1, resolveEvolutionTier2, applyLoadout } from '../engine/build.js';
 import { ELEMENTS } from '../engine/elements.js';
 
 // Seeded RNG factory — deterministic for tests; non-deterministic in prod.
@@ -162,8 +162,28 @@ export const dungeonScene = {
         if (target && resolveShape(p, target, w)) {
           const result = applyHit(target, w.damage, p, this._rng);
           console.log(`[combat] hit: ${target.id} for ${result.damage}${result.crit ? ' (CRIT!)' : ''}`);
+
+          // M3: track per-weapon element damage and kills
+          const weaponId = p.weapon.id;
+          if (!p.evolutionState[weaponId]) {
+            const zero = Object.fromEntries(ELEMENTS.map((e) => [e.id, 0]));
+            p.evolutionState[weaponId] = { tier: p.weapon.template.tier || 0, kills: 0, elementDamage: zero };
+          }
+          const abilityElement = p.weapon.template.element;
+          if (abilityElement) p.evolutionState[weaponId].elementDamage[abilityElement] += result.damage;
+          if (result.killed) {
+            p.evolutionState[weaponId].kills++;
+            this._onMonsterKilled(target);
+            // Tier-2 evolution
+            const t2 = resolveEvolutionTier2(p.weapon.template, p.evolutionState[weaponId], this._weapons);
+            if (t2) {
+              console.log(`[evolution] ${p.weapon.id} → ${t2.id}`);
+              p.weapon.template = t2;
+              p.weapon.id = t2.id;
+              p.evolutionState[weaponId].tier = t2.tier;
+            }
+          }
           p.weapon.lastAttackTime = now;
-          if (result.killed) this._onMonsterKilled(target);
         }
       }
     }
@@ -268,8 +288,9 @@ export const dungeonScene = {
   },
 
   _onMonsterKilled(monster) {
-    console.log(`[pickup] spawn: xp gem +${monster.template.drops[0].amount}`);
-    for (const drop of monster.template.drops) {
+    const drops = monster.template.drops || [];
+    for (const drop of drops) {
+      console.log(`[pickup] spawn: xp gem +${drop.amount}`);
       if (drop.kind === 'xp' && Math.random() < (drop.chance ?? 1.0)) {
         this._gems.push(createXpGem(monster.x, monster.y, drop.amount));
       }
