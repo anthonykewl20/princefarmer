@@ -1,0 +1,50 @@
+[
+  {
+    "id": "might",
+    "name": "Might",
+    "effect": { "stat": "attackPower", "op": "add", "value": 1 },
+    "element": "fire",
+    "maxStacks": 5,
+    "tier": 1
+  },
+  {
+    "id": "vigor",
+    "name": "Vigor",
+    "effect": { "stat": "maxHp", "op": "add", "value": 10 },
+    "element": "water",
+    "maxStacks": 5,
+    "tier": 1
+  },
+  {
+    "id": "haste",
+    "name": "Haste",
+    "effect": { "stat": "speed", "op": "mul", "value": 0.05 },
+    "element": "air",
+    "maxStacks": 5,
+    "tier": 1
+  },
+  {
+    "id": "stoneheart",
+    "name": "Stoneheart",
+    "effect": { "stat": "maxHp", "op": "mul", "value": 0.05 },
+    "element": "earth",
+    "maxStacks": 3,
+    "tier": 2
+  },
+  {
+    "id": "stormcall",
+    "name": "Stormcall",
+    "effect": { "stat": "critChance", "op": "add", "value": 0.02 },
+    "element": "lightning",
+    "maxStacks": 3,
+    "tier": 2
+  },
+  {
+    "id": "soulrend",
+    "name": "Soulrend",
+    "effect": { "stat": "lifesteal", "op": "add", "value": 0.03 },
+    "element": "spirit",
+    "maxStacks": 3,
+    "tier": 3
+  }
+]
