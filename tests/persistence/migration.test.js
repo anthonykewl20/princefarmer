@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrate } from '../../src/persistence/migration.js';
+import { migrate, UPGRADES, migrateV1ToV2 } from '../../src/persistence/migration.js';
 
 describe('migrate', () => {
   it('returns the save unchanged if already at current version', () => {
@@ -22,5 +22,84 @@ describe('migrate', () => {
     expect(v2.version).toBe(2);
     expect(v2.tutorialDone).toBe(false);
     expect(v2.player.level).toBe(5);
+  });
+});
+
+describe('migrateV1ToV2 (M2 game upgrade)', () => {
+  it('adds attackPower=1, level=1, xp=0 to the player; preserves classId', () => {
+    const v1 = {
+      version: 1,
+      createdAt: '2026-01-01',
+      updatedAt: '2026-01-01',
+      player: { classId: 'lakan-alon', hp: 50, maxHp: 100 },
+    };
+    const v2 = migrateV1ToV2(v1);
+    expect(v2.version).toBe(2);
+    expect(v2.player.attackPower).toBe(1);
+    expect(v2.player.level).toBe(1);
+    expect(v2.player.xp).toBe(0);
+    expect(v2.player.classId).toBe('lakan-alon');
+    expect(v2.player.hp).toBe(50);
+  });
+
+  it('preserves existing weapons array or seeds with kampilan default', () => {
+    const v1 = { version: 1, player: { classId: 'farmer' } };
+    const v2 = migrateV1ToV2(v1);
+    expect(Array.isArray(v2.weapons)).toBe(true);
+    expect(v2.weapons).toEqual([{ slot: 'main', id: 'kampilan', abilitiesPicked: [] }]);
+  });
+
+  it('does not overwrite a player who already has attackPower (re-runs are safe)', () => {
+    const v1 = { version: 1, player: { classId: 'farmer', attackPower: 4, level: 5, xp: 12 } };
+    const v2 = migrateV1ToV2(v1);
+    expect(v2.player.attackPower).toBe(4);
+    expect(v2.player.level).toBe(5);
+    expect(v2.player.xp).toBe(12);
+  });
+});
+
+describe('UPGRADES registry', () => {
+  it('includes the v1→v2 upgrade at key 2', () => {
+    expect(typeof UPGRADES[2]).toBe('function');
+  });
+
+  it('migrate() with default options upgrades v1 → v2', () => {
+    const v1 = { version: 1, player: { classId: 'farmer' } };
+    const v2 = migrate(v1, { currentVersion: 2, upgrades: UPGRADES });
+    expect(v2.version).toBe(2);
+    expect(v2.player.attackPower).toBe(1);
+  });
+});
+
+import { migrateV2ToV3 } from '../../src/persistence/migration.js';
+
+describe('migrateV2ToV3', () => {
+  it('adds weapons[] with default kampilan if missing', () => {
+    const v2 = { version: 2, player: { classId: 'lakan-alon', hp: 50, maxHp: 100 } };
+    const v3 = migrateV2ToV3(v2);
+    expect(v3.version).toBe(3);
+    expect(v3.weapons).toEqual([
+      { slot: 'main', id: 'kampilan', abilitiesPicked: ['lunging-strike', 'sweep'] },
+    ]);
+  });
+
+  it('preserves existing weapons array', () => {
+    const v2 = { version: 2, weapons: [{ slot: 'main', id: 'baladaw', abilitiesPicked: ['flame-slash', 'ember-step'] }] };
+    const v3 = migrateV2ToV3(v2);
+    expect(v3.weapons).toEqual([{ slot: 'main', id: 'baladaw', abilitiesPicked: ['flame-slash', 'ember-step'] }]);
+  });
+
+  it('adds empty loadout, ownedPassives, evolutionState', () => {
+    const v2 = { version: 2, player: {} };
+    const v3 = migrateV2ToV3(v2);
+    expect(v3.loadout).toEqual({ passives: [null, null, null, null, null, null] });
+    expect(v3.ownedPassives).toEqual([]);
+    expect(v3.evolutionState).toEqual({});
+  });
+});
+
+describe('UPGRADES registry (M3)', () => {
+  it('includes the v2→v3 upgrade at key 3', () => {
+    expect(typeof UPGRADES[3]).toBe('function');
   });
 });

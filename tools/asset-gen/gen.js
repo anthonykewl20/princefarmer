@@ -17,6 +17,8 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { heroPrompt } from './prompts/hero.js';
+import { aswangPrompt } from './prompts/monster.js';
+import { kampilanPrompt } from './prompts/weapon.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..', '..');
@@ -94,10 +96,25 @@ async function callPixelLab(prompt, size, styleAnchorPath) {
 }
 
 async function buildPrompt(asset) {
+  // Parse anim + frame from the id (e.g. "hero/idle/0", "monsters/aswang/lunge/0")
+  const segments = asset.id.split('/');
   if (asset.type === 'hero') {
-    // Parse anim + frame from the id (e.g. "hero/idle/0")
-    const [, anim, frameStr] = asset.id.split('/');
+    const [, anim, frameStr] = segments;
     return heroPrompt(anim, parseInt(frameStr, 10));
+  }
+  if (asset.type === 'monster') {
+    const [, monsterId, anim, frameStr] = segments;
+    if (monsterId !== 'aswang') {
+      throw new Error(`No prompt builder for monster "${monsterId}"`);
+    }
+    return aswangPrompt(anim, parseInt(frameStr, 10));
+  }
+  if (asset.type === 'weapon') {
+    const [, weaponId, anim, frameStr] = segments;
+    if (weaponId !== 'kampilan') {
+      throw new Error(`No prompt builder for weapon "${weaponId}"`);
+    }
+    return kampilanPrompt(anim, parseInt(frameStr, 10));
   }
   throw new Error(`No prompt builder for asset type "${asset.type}"`);
 }

@@ -21,5 +21,9 @@
   ],
   "props": [
     { "kind": "ladder", "x": 4, "y": 6, "height": 3 }
+  ],
+  "monsterSpawns": [
+    { "monsterId": "aswang", "x": 8, "y": 4, "count": 3 },
+    { "monsterId": "aswang", "x": 15, "y": 9, "count": 1 }
   ]
 }

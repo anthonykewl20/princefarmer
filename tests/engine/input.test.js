@@ -14,6 +14,7 @@ describe('input', () => {
       expect(KEY_BINDINGS.down).toEqual(expect.arrayContaining(['ArrowDown', 'KeyS']));
       expect(KEY_BINDINGS.escape).toEqual(expect.arrayContaining(['Escape']));
       expect(KEY_BINDINGS.interact).toEqual(expect.arrayContaining(['KeyE', 'Enter']));
+      expect(KEY_BINDINGS.attack2).toEqual(expect.arrayContaining(['KeyQ', 'ShiftLeft']));
     });
   });
 

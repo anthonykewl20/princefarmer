@@ -1,0 +1,199 @@
+/**
+ * Build system — pure functions for loadout validation, evolution, and
+ * element math.
+ *
+ * No game state, no entity references. All inputs are plain objects.
+ */
+
+import { isElement } from './elements.js';
+
+/**
+ * Check whether `abilityId` is one of the weapon's pickable abilities.
+ */
+export function canPickAbility(weapon, abilityId) {
+  if (!abilityId) return false;
+  return Array.isArray(weapon?.abilities) && weapon.abilities.includes(abilityId);
+}
+
+/**
+ * Validate a player's 2-ability pick for a single weapon slot.
+ * @returns {{ok:true} | {ok:false, error:string}}
+ */
+export function validateAbilityPick(weapon, picked) {
+  if (!Array.isArray(picked) || picked.length !== 2) {
+    return { ok: false, error: 'must pick exactly 2 abilities' };
+  }
+  if (picked[0] === picked[1]) {
+    return { ok: false, error: 'cannot pick the same ability twice' };
+  }
+  for (const a of picked) {
+    if (!canPickAbility(weapon, a)) {
+      return { ok: false, error: `${a} is not on ${weapon.id}` };
+    }
+  }
+  return { ok: true };
+}
+
+/**
+ * Count how many slots in `loadout.passives` contain the given passive id.
+ */
+export function countPassiveInLoadout(loadout, passiveId) {
+  if (!loadout || !Array.isArray(loadout.passives)) return 0;
+  return loadout.passives.filter((p) => p === passiveId).length;
+}
+
+/**
+ * Collect the distinct elements touched by the weapons and the
+ * passives currently in the loadout's passive slots.
+ */
+export function distinctElementsInLoadout(loadout, passiveRegistry) {
+  const out = new Set();
+  if (!loadout) return out;
+  if (loadout.main?.element) out.add(loadout.main.element);
+  if (loadout.offhand?.element) out.add(loadout.offhand.element);
+  if (Array.isArray(loadout.passives) && passiveRegistry) {
+    for (const pid of loadout.passives) {
+      if (!pid) continue;
+      const p = passiveRegistry.get(pid);
+      if (p?.element) out.add(p.element);
+    }
+  }
+  return out;
+}
+
+/**
+ * Compute the damage multiplier from element-affinity passives.
+ * Base 1.0. +0.15 per loadout slot whose passive has the same element
+ * as the ability. Returns {multiplier, dominantElement}.
+ */
+export function computeElementMultiplier(loadout, ability, passiveRegistry) {
+  if (!ability?.element || !isElement(ability.element)) {
+    return { multiplier: 1, dominantElement: null };
+  }
+  let matchingSlots = 0;
+  if (Array.isArray(loadout?.passives) && passiveRegistry) {
+    for (const pid of loadout.passives) {
+      if (!pid) continue;
+      const p = passiveRegistry.get(pid);
+      if (p?.element === ability.element) matchingSlots++;
+    }
+  }
+  return { multiplier: 1 + 0.15 * matchingSlots, dominantElement: ability.element };
+}
+
+/**
+ * Compute the multi-element combo bonus.
+ * 3+ distinct elements → 1.10. 5+ distinct elements → 1.25. Else 1.00.
+ */
+export function computeComboBonus(loadout, passiveRegistry) {
+  const n = distinctElementsInLoadout(loadout, passiveRegistry).size;
+  if (n >= 5) return 1.25;
+  if (n >= 3) return 1.10;
+  return 1;
+}
+
+/**
+ * Resolve a tier-1 evolution at run start. Iterates the weapon's
+ * `evolvesInto` recipes in JSON order; the first whose condition holds
+ * wins. Ties broken by declaration order.
+ *
+ * @returns {object|null} the evolved weapon template, or null
+ */
+export function resolveEvolutionTier1(weapon, loadout, weaponRegistry, passiveRegistry) {
+  if (!weapon?.evolvesInto) return null;
+  for (const [key, evolvedId] of Object.entries(weapon.evolvesInto)) {
+    const match = key.match(/^withPassive:([^:]+):count:(\d+)$/);
+    if (!match) continue;
+    const [, passiveId, countStr] = match;
+    const needed = Number(countStr);
+    if (countPassiveInLoadout(loadout, passiveId) >= needed) {
+      const evolved = weaponRegistry.get(evolvedId);
+      if (evolved) return evolved;
+    }
+  }
+  return null;
+}
+
+/**
+ * Find the dominant element from a damage map. Ties broken by the
+ * element's order in `ELEMENTS`. Returns null if no damage dealt.
+ */
+export function dominantElement(elementDamage) {
+  let best = null;
+  let bestValue = 0;
+  for (const [el, dmg] of Object.entries(elementDamage || {})) {
+    if (dmg > bestValue) { best = el; bestValue = dmg; }
+  }
+  return bestValue > 0 ? best : null;
+}
+
+/**
+ * Resolve a tier-2 evolution. Requires:
+ *  - current form's tier === 1
+ *  - kills >= threshold parsed from evolutionTrigger "kills:N"
+ *  - dominant element of elementDamage matches a tier2Paths entry
+ *    AND that element's share >= elementDamageThreshold
+ *
+ * @returns {object|null} the tier-2 weapon template, or null
+ */
+export function resolveEvolutionTier2(currentForm, state, weaponRegistry) {
+  if (state?.tier !== 1) return null;
+  const match = (currentForm.evolutionTrigger || '').match(/^kills:(\d+)$/);
+  if (!match) return null;
+  const threshold = Number(match[1]);
+  if ((state.kills || 0) < threshold) return null;
+
+  const total = Object.values(state.elementDamage || {}).reduce((a, b) => a + b, 0);
+  if (total === 0) return null;
+  const dom = dominantElement(state.elementDamage);
+  if (!dom) return null;
+
+  for (const path of (currentForm.tier2Paths || [])) {
+    if (path.dominantElement !== dom) continue;
+    const share = (state.elementDamage[dom] || 0) / total;
+    if (share >= path.elementDamageThreshold) {
+      const next = weaponRegistry.get(path.id);
+      if (next) return next;
+    }
+  }
+  return null;
+}
+
+const KNOWN_STATS = ['attackPower', 'maxHp', 'speed', 'critChance', 'lifesteal'];
+
+/**
+ * Apply the loadout's passive effects to compute a bonus bag.
+ * - `add` effects sum the `value` × (number of slots containing the passive).
+ * - `mul` effects apply as percentage: 1 + value × slots.
+ *
+ * The dungeon reads `result.bonuses` and applies them to combat math
+ * (e.g. effective attackPower = base + bonuses.attackPower).
+ *
+ * @returns {{bonuses: object, effective: object}} — bonuses are deltas;
+ *   effective is the resolved stat after applying bonuses to `player`.
+ */
+export function applyLoadout(player, loadout, passiveRegistry) {
+  const bonuses = Object.fromEntries(KNOWN_STATS.map((s) => [s, 0]));
+  const slots = Array.isArray(loadout?.passives) ? loadout.passives : [];
+  for (const pid of slots) {
+    if (!pid) continue;
+    const p = passiveRegistry?.get(pid);
+    if (!p) continue;
+    const stat = p.effect?.stat;
+    if (!KNOWN_STATS.includes(stat)) continue;
+    if (p.effect.op === 'add') {
+      bonuses[stat] += p.effect.value;
+    } else if (p.effect.op === 'mul') {
+      // mul applies as 1 + (value × slotCount) — we report the delta only
+      bonuses[stat] += p.effect.value;
+    }
+  }
+  // Compute the effective stats (base + bonus for add, base × (1+sum mul) for mul).
+  // M3 keeps a single bonus bag; the dungeon can interpret `mul` bonuses
+  // as `1 + sum` if it needs a multiplier. For now, return the bag.
+  const effective = {};
+  for (const stat of KNOWN_STATS) {
+    effective[stat] = (player?.[stat] ?? 0) + bonuses[stat];
+  }
+  return { bonuses, effective };
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameDB } from '../../src/engine/gamedb.js';
+import { GameDB, loadWeapons, loadMonsters, loadAbilities } from '../../src/engine/gamedb.js';
 
 describe('GameDB', () => {
   let db;
@@ -41,5 +41,36 @@ describe('GameDB', () => {
     ]);
     const meleeIds = db.idsWhere(item => item.type === 'melee');
     expect(meleeIds.sort()).toEqual(['spear', 'sword']);
+  });
+});
+
+describe('loadWeapons', () => {
+  it('loads weapons.json and indexes by id', () => {
+    const weapons = loadWeapons();
+    expect(weapons.get('kampilan')).toBeTruthy();
+  });
+});
+
+describe('loadMonsters', () => {
+  it('loads monsters.json and indexes by id', () => {
+    const monsters = loadMonsters();
+    expect(monsters.get('aswang')).toBeTruthy();
+  });
+});
+
+describe('loadAbilities', () => {
+  it('loads abilities.json and indexes by id', () => {
+    const abilities = loadAbilities();
+    expect(abilities.get('lunging-strike')).toBeTruthy();
+  });
+});
+
+import { loadPassives } from '../../src/engine/gamedb.js';
+
+describe('loadPassives (M3)', () => {
+  it('loads passives.json and indexes by id', () => {
+    const passives = loadPassives();
+    expect(passives.get('might')).toBeTruthy();
+    expect(passives.size).toBe(6);
   });
 });

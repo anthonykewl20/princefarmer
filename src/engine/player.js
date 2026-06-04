@@ -39,6 +39,25 @@ export function createPlayer(x, y, input) {
     animState: 'idle', // 'idle' | 'run' | 'jump' | 'climb' | 'hurt' | 'death'
     animFrame: 0,
     animTimer: 0,
+    // M2 additions
+    xp: 0,
+    level: 1,
+    attackPower: 1,
+    pendingLevelUp: false,
+    weapon: {
+      id: null,        // set by the dungeon scene from a weapon template
+      template: null,
+      lastAttackTime: 0,
+      lastAbilityTime: 0,
+    },
+    // M3 additions
+    loadout: {
+      main:    { weaponId: 'kampilan', abilitiesPicked: [] },
+      offhand: { weaponId: null,       abilitiesPicked: [] },
+      passives: [null, null, null, null, null, null],
+    },
+    ownedPassives: [],
+    evolutionState: {},
   };
   // Attach methods so callers can do player.update(dt) / player.takeDamage(n) / player.heal(n)
   player.update = (dt) => updatePlayer(player, dt);

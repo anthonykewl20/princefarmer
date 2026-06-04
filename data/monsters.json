@@ -1,0 +1,14 @@
+[
+  {
+    "id": "aswang",
+    "name": "Aswang",
+    "hp": 30,
+    "damage": 8,
+    "speed": 1.5,
+    "contactRange": 0.6,
+    "behavior": "strafe-lunge",
+    "drops": [{ "kind": "xp", "amount": 5, "chance": 1.0 }],
+    "spriteRef": "monsters/aswang",
+    "tags": ["melee", "fodder"]
+  }
+]

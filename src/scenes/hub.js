@@ -20,15 +20,24 @@ const ENTRANCE_RADIUS = 1.5;
 
 export const hubScene = {
   name: 'hub',
-  enter() {
+  enter(ctx = {}) {
     console.log('[scene] enter: hub');
     this._input = createInput(globalThis);
     this._playerX = 0;
     this._playerY = 1;
+    // M2: when the hub is entered after death or a level-up, the scene
+    // receives the player object in ctx. Restore HP to full and clear
+    // any pending level-up so the player starts fresh.
+    if (ctx.player) {
+      ctx.player.hp = ctx.player.maxHp ?? 100;
+      ctx.player.pendingLevelUp = false;
+    }
+    this._player = ctx.player || null;
   },
   exit() {
     console.log('[scene] exit: hub');
     this._input = null;
+    this._player = null;
   },
   update(dt) {
     if (this._input.isPressed('left')) this._playerX -= 3 * dt;
@@ -36,12 +45,18 @@ export const hubScene = {
     if (this._input.isPressed('up')) this._playerY -= 3 * dt;
     if (this._input.isPressed('down')) this._playerY += 3 * dt;
 
+    // M3: open loadout scene on L
+    if (this._input.wasJustPressed('loadout') && this._player) {
+      if (sm) sm.transition('loadout', { player: this._player });
+      return;
+    }
+
     const dx = this._playerX - ENTRANCE_X;
     const dy = this._playerY - ENTRANCE_Y;
     const nearEntrance = Math.hypot(dx, dy) < ENTRANCE_RADIUS;
 
     if (nearEntrance && this._input.wasJustPressed('interact')) {
-      if (enterDungeon) enterDungeon('01-stub-sandbox');
+      if (enterDungeon) enterDungeon('01-stub-sandbox', this._player);
     }
   },
   render(ctx) {

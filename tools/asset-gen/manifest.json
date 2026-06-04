@@ -19,6 +19,11 @@
     { "id": "hero/death/0", "type": "hero", "anim": "death", "frame": 0, "status": "missing", "file": "assets/sprites/hero/death/0.png", "size": [16, 24] },
     { "id": "hero/death/1", "type": "hero", "anim": "death", "frame": 1, "status": "missing", "file": "assets/sprites/hero/death/1.png", "size": [16, 24] },
     { "id": "hero/death/2", "type": "hero", "anim": "death", "frame": 2, "status": "missing", "file": "assets/sprites/hero/death/2.png", "size": [16, 24] },
-    { "id": "hero/death/3", "type": "hero", "anim": "death", "frame": 3, "status": "missing", "file": "assets/sprites/hero/death/3.png", "size": [16, 24] }
+    { "id": "hero/death/3", "type": "hero", "anim": "death", "frame": 3, "status": "missing", "file": "assets/sprites/hero/death/3.png", "size": [16, 24] },
+    { "id": "monsters/aswang/idle/0", "type": "monster", "monsterId": "aswang", "anim": "idle", "frame": 0, "status": "missing", "file": "assets/sprites/monsters/aswang/idle/0.png", "size": [32, 32] },
+    { "id": "monsters/aswang/strafe/0", "type": "monster", "monsterId": "aswang", "anim": "strafe", "frame": 0, "status": "missing", "file": "assets/sprites/monsters/aswang/strafe/0.png", "size": [32, 32] },
+    { "id": "monsters/aswang/lunge/0", "type": "monster", "monsterId": "aswang", "anim": "lunge", "frame": 0, "status": "missing", "file": "assets/sprites/monsters/aswang/lunge/0.png", "size": [32, 32] },
+    { "id": "weapons/kampilan/idle/0", "type": "weapon", "weaponId": "kampilan", "anim": "idle", "frame": 0, "status": "missing", "file": "assets/sprites/weapons/kampilan/idle/0.png", "size": [32, 32] },
+    { "id": "weapons/kampilan/swing/0", "type": "weapon", "weaponId": "kampilan", "anim": "swing", "frame": 0, "status": "missing", "file": "assets/sprites/weapons/kampilan/swing/0.png", "size": [32, 32] }
   ]
 }

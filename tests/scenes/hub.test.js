@@ -70,11 +70,45 @@ describe('hub scene', () => {
       const enterDungeon = vi.fn();
       setEnterDungeon(enterDungeon);
       setHubStateMachine({});
+      hubScene._player = { level: 2 };
       hubScene._playerX = 5; // ENTRANCE_X
       hubScene._playerY = 1; // ENTRANCE_Y
       hubScene._input = { ...makeInput(), wasJustPressed: (a) => a === 'interact' };
       hubScene.update(0.016);
-      expect(enterDungeon).toHaveBeenCalledWith('01-stub-sandbox');
+      expect(enterDungeon).toHaveBeenCalledWith('01-stub-sandbox', hubScene._player);
     });
+  });
+
+  describe('HP restore on enter (M2: post-death / post-levelup)', () => {
+    it('restores the player to full HP and clears pendingLevelUp when a player is passed in', () => {
+      const player = { hp: 0, maxHp: 100, pendingLevelUp: true };
+      hubScene.exit();
+      hubScene.enter({ player });
+      expect(hubScene._player).toBe(player);
+      expect(hubScene._player.hp).toBe(100);
+      expect(hubScene._player.pendingLevelUp).toBe(false);
+    });
+
+    it('does not throw when enter() is called without a player', () => {
+      expect(() => hubScene.enter()).not.toThrow();
+      expect(hubScene._player).toBeNull();
+    });
+  });
+});
+
+describe('hub opens loadout scene (M3)', () => {
+  beforeEach(() => {
+    hubScene.exit();
+    hubScene.enter();
+    hubScene._input = { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} };
+  });
+
+  it('transitions to loadout when L is pressed', () => {
+    const sm = { transition: vi.fn() };
+    setHubStateMachine(sm);
+    hubScene._player = { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } };
+    hubScene._input = { ...hubScene._input, wasJustPressed: (a) => a === 'loadout' };
+    hubScene.update(0.016);
+    expect(sm.transition).toHaveBeenCalledWith('loadout', expect.objectContaining({ player: hubScene._player }));
   });
 });

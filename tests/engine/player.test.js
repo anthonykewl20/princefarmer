@@ -172,3 +172,41 @@ describe('player climbing', () => {
     expect(p.fallDistance).toBe(0);
   });
 });
+
+describe('player M2 fields', () => {
+  it('initializes weapon state with zero cooldowns', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.weapon).toBeTruthy();
+    expect(p.weapon.lastAttackTime).toBe(0);
+    expect(p.weapon.lastAbilityTime).toBe(0);
+  });
+
+  it('initializes xp, level, attackPower with M2 defaults', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.xp).toBe(0);
+    expect(p.level).toBe(1);
+    expect(p.attackPower).toBe(1);
+    expect(p.pendingLevelUp).toBe(false);
+  });
+});
+
+describe('player M3 fields', () => {
+  it('initializes loadout with empty slots and kampilan as default main', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.loadout).toBeTruthy();
+    expect(p.loadout.main).toEqual({ weaponId: 'kampilan', abilitiesPicked: [] });
+    expect(p.loadout.offhand).toEqual({ weaponId: null, abilitiesPicked: [] });
+    expect(p.loadout.passives).toEqual([null, null, null, null, null, null]);
+  });
+
+  it('initializes ownedPassives as an empty array', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(Array.isArray(p.ownedPassives)).toBe(true);
+    expect(p.ownedPassives.length).toBe(0);
+  });
+
+  it('initializes evolutionState as an empty object', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.evolutionState).toEqual({});
+  });
+});
