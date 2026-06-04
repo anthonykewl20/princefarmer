@@ -96,11 +96,18 @@ describe('dungeon scene', () => {
 
       const calls = [];
       const ctx = {
+        canvas: { width: 800, height: 600 },
         save: vi.fn(() => calls.push('save')),
         restore: vi.fn(() => calls.push('restore')),
         setTransform: vi.fn(() => calls.push('setTransform')),
         fillStyle: '',
         fillRect: vi.fn(),
+        strokeStyle: '',
+        strokeRect: vi.fn(),
+        lineWidth: 0,
+        font: '',
+        textAlign: '',
+        fillText: vi.fn(),
       };
       dungeonScene.render(ctx);
 

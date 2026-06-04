@@ -19,16 +19,11 @@ import { createCamera, updateCamera } from '../engine/camera.js';
 import { createPlayer, updatePlayer, takeDamage, FALL_DAMAGE_THRESHOLD } from '../engine/player.js';
 import { createTileGrid, getTile, TILE_SIZE, TILE_SOLID, TILE_LADDER } from '../engine/tiles.js';
 import { calculateFallDamage } from '../engine/damage.js';
-import { drawHud } from '../ui/hud.js';
+import { drawHud, drawCombatHud } from '../ui/hud.js';
 import { createMonster } from '../engine/monster.js';
 import { createXpGem } from '../engine/pickup.js';
 import { applyHit, resolveShape } from '../engine/combat.js';
 import { triggerDeath } from '../engine/death.js';
-
-// M2: stubbed — Task 20 will replace this with the real implementation
-function drawCombatHud(ctx, p, room, weapon) {
-  // no-op until Task 20 lands
-}
 
 // Seeded RNG factory — deterministic for tests; non-deterministic in prod.
 function makeRng(seed) {
