@@ -192,7 +192,7 @@ export const dungeonScene = {
       triggerDeath(p);
       console.log('[dungeon] player died');
       if (this._stateMachine) {
-        this._stateMachine.transition('death', { dungeonId: this._dungeonId });
+        this._stateMachine.transition('death', { dungeonId: this._dungeonId, player: p });
       }
       return;
     }

@@ -18,7 +18,7 @@ describe('death scene', () => {
     deathScene.update(1.0);
     expect(sm.transition).not.toHaveBeenCalled();
     deathScene.update(0.6); // total 1.6s
-    expect(sm.transition).toHaveBeenCalledWith('hub', { dungeonId: 'd1' });
+    expect(sm.transition).toHaveBeenCalledWith('hub', { dungeonId: 'd1', player: null });
   });
 
   it('render() draws "YOU DIED" overlay', () => {

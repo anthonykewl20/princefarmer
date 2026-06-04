@@ -77,4 +77,20 @@ describe('hub scene', () => {
       expect(enterDungeon).toHaveBeenCalledWith('01-stub-sandbox');
     });
   });
+
+  describe('HP restore on enter (M2: post-death / post-levelup)', () => {
+    it('restores the player to full HP and clears pendingLevelUp when a player is passed in', () => {
+      const player = { hp: 0, maxHp: 100, pendingLevelUp: true };
+      hubScene.exit();
+      hubScene.enter({ player });
+      expect(hubScene._player).toBe(player);
+      expect(hubScene._player.hp).toBe(100);
+      expect(hubScene._player.pendingLevelUp).toBe(false);
+    });
+
+    it('does not throw when enter() is called without a player', () => {
+      expect(() => hubScene.enter()).not.toThrow();
+      expect(hubScene._player).toBeNull();
+    });
+  });
 });

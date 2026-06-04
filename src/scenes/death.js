@@ -14,16 +14,18 @@ export const deathScene = {
     this._timer = 0;
     this._returnTo = ctx.returnTo || 'hub';
     this._dungeonId = ctx.dungeonId;
+    this._player = ctx.player || null;
   },
   exit() {
     this._timer = 0;
     this._returnTo = null;
     this._dungeonId = null;
+    this._player = null;
   },
   update(dt) {
     this._timer += dt;
     if (this._timer >= OVERLAY_DURATION) {
-      this._stateMachine.transition(this._returnTo, { dungeonId: this._dungeonId });
+      this._stateMachine.transition(this._returnTo, { dungeonId: this._dungeonId, player: this._player });
     }
   },
   render(ctx) {
