@@ -10,12 +10,14 @@
 
 import { engineInit, timeDelta } from 'littlejsengine';
 import { loadJSON } from './utils/json-loader.js';
-import { GameDB, loadRooms, loadDungeons } from './engine/gamedb.js';
+import { GameDB, loadRooms, loadDungeons, loadWeapons, loadMonsters, loadAbilities } from './engine/gamedb.js';
 import { SaveManager } from './persistence/save.js';
 import { StateMachine } from './scenes/state-machine.js';
 import { titleScene, setTitleStateMachine } from './scenes/title.js';
 import { hubScene, setHubStateMachine, setEnterDungeon } from './scenes/hub.js';
 import { dungeonScene, setDungeons } from './scenes/dungeon.js';
+import { deathScene } from './scenes/death.js';
+import { levelupScene } from './scenes/levelup.js';
 import { registerServiceWorker } from './sw-register.js';
 
 const canvas = document.getElementById('game-canvas');
@@ -35,20 +37,34 @@ async function boot() {
   const save = new SaveManager('princefarmer-save');
   await save._ready();
 
+  // M2: combat data registries
+  const weapons = loadWeapons();
+  const monsters = loadMonsters();
+  const abilities = loadAbilities();
+
+  // Build a dungeon-entry ctx once and reuse it for both the normal
+  // hub→dungeon path and the E2E test's manual transition.
+  const dungeonCtx = (id) => ({
+    dungeonId: id,
+    rooms,
+    weapons,
+    monsters,
+    abilities,
+    hubTransition: () => sm.transition('hub'),
+  });
+
   const sm = new StateMachine('title', {
     title: titleScene,
     hub: hubScene,
     dungeon: dungeonScene,
+    death: deathScene,
+    levelup: levelupScene,
   });
 
   setTitleStateMachine(sm);
 
   setHubStateMachine(sm);
-  setEnterDungeon((id) => sm.transition('dungeon', {
-    dungeonId: id,
-    rooms,
-    hubTransition: () => sm.transition('hub'),
-  }));
+  setEnterDungeon((id) => sm.transition('dungeon', dungeonCtx(id)));
 
   // Mount LittleJS v1.18 with the canvas as the root element and
   // route the per-frame gameUpdate callback into our state machine.
@@ -66,8 +82,9 @@ async function boot() {
   // Expose for the Playwright E2E test to drive transitions.
   window.__pf = {
     db: rooms, save, sm, rooms, dungeons,
+    weapons, monsters, abilities,
     transition: (s, ctx) => sm.transition(s, ctx),
-    enterDungeon: (id) => sm.transition('dungeon', { dungeonId: id, rooms, hubTransition: () => sm.transition('hub') }),
+    enterDungeon: (id) => sm.transition('dungeon', dungeonCtx(id)),
   };
 
   registerServiceWorker();
