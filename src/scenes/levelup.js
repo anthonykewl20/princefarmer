@@ -1,24 +1,39 @@
 /**
  * Level-up scene.
  *
- * Shows a "LEVEL UP!" flash for 1.0s, then transitions back to the
- * dungeon. The rewards (level++, maxHp, full HP, attackPower) are
+ * Shows a "LEVEL UP!" flash for 1.0s, then offers the player 3 passive
+ * choices (M3). On Enter, the picked passive is added to
+ * `ownedPassives` and (if a null slot exists) placed in
+ * `loadout.passives`. The scene then transitions back to the dungeon.
+ * The baseline rewards (level++, maxHp, full HP, attackPower) are
  * applied in exit() so the dungeon scene resumes with the player in
  * the post-level-up state.
  */
 
 import { applyLevelUpRewards } from '../engine/levelup.js';
+import { pickPassiveChoices } from '../engine/passivedrop.js';
 import { SaveManager } from '../persistence/save.js';
 
 const FLASH_DURATION = 1.0; // seconds
 
 export const levelupScene = {
   name: 'levelup',
+
   enter(ctx = {}) {
     this._timer = 0;
     this._dungeonId = ctx.dungeonId;
     this._player = ctx.player;
+    this._weapons = ctx.weapons || new Map();
+    this._passives = ctx.passives || [];
+    this._input = ctx.input || null;
+    this._choices = pickPassiveChoices(
+      this._player || { ownedPassives: [], loadout: { passives: [] } },
+      this._passives,
+      3,
+      Math.random,
+    );
   },
+
   exit() {
     if (this._player) {
       applyLevelUpRewards(this._player);
@@ -26,12 +41,32 @@ export const levelupScene = {
       try { SaveManager.save(this._player); } catch (e) { /* best-effort */ }
     }
   },
+
   update(dt) {
     this._timer += dt;
-    if (this._timer >= FLASH_DURATION) {
-      this._stateMachine.transition('dungeon', { dungeonId: this._dungeonId, player: this._player });
+    if (this._timer < FLASH_DURATION) return;
+    // After flash: pick a passive on Enter
+    if (this._input && this._input.wasJustPressed('interact') && this._choices.length > 0) {
+      const pick = this._choices[0]; // M3: first choice; future: arrow-key selection
+      if (typeof pick === 'string') {
+        // New passive
+        this._player.ownedPassives = [...(this._player.ownedPassives || []), pick];
+        const slots = this._player.loadout.passives.slice();
+        const emptyIdx = slots.findIndex((s) => s === null);
+        if (emptyIdx !== -1) slots[emptyIdx] = pick;
+        this._player.loadout.passives = slots;
+      } else if (pick.kind === 'stack') {
+        const slots = this._player.loadout.passives.slice();
+        const emptyIdx = slots.findIndex((s) => s === null);
+        if (emptyIdx !== -1) slots[emptyIdx] = pick.passiveId;
+        this._player.loadout.passives = slots;
+      }
+      if (this._stateMachine) {
+        this._stateMachine.transition('dungeon', { dungeonId: this._dungeonId, player: this._player });
+      }
     }
   },
+
   render(ctx) {
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
