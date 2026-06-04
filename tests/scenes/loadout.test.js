@@ -31,10 +31,11 @@ describe('loadout scene skeleton (M3)', () => {
   it('update() on Esc returns to hub with discard', () => {
     const sm = { transition: vi.fn() };
     setLoadoutStateMachine(sm);
+    const player = { loadout: { main: { weaponId: 'kampilan' }, offhand: { weaponId: null }, passives: [null,null,null,null,null,null] } };
     loadoutScene._input = { wasJustPressed: (a) => a === 'escape' };
-    loadoutScene.enter({ player: { loadout: { main: { weaponId: 'kampilan' }, offhand: { weaponId: null }, passives: [null,null,null,null,null,null] } } });
+    loadoutScene.enter({ player });
     loadoutScene.update(0.016);
-    expect(sm.transition).toHaveBeenCalledWith('hub');
+    expect(sm.transition).toHaveBeenCalledWith('hub', { player });
   });
 });
 
@@ -100,5 +101,18 @@ describe('loadout scene — passives step (M3)', () => {
     loadoutScene._step = 'passives';
     loadoutScene._stepState.passiveSlots = ['mythical', null, null, null, null, null];
     expect(() => loadoutScene._commitPassives()).toThrow(/unknown passive/);
+  });
+
+  it('final confirm returns to hub with the updated player', () => {
+    const sm = { transition: vi.fn() };
+    setLoadoutStateMachine(sm);
+    const player = { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } };
+    const passives = new Map([['might', { id: 'might', maxStacks: 5 }]]);
+    loadoutScene.enter({ player, passives });
+    loadoutScene._step = 'passives';
+    loadoutScene._stepState.passiveSlots = ['might', null, null, null, null, null];
+    loadoutScene._advance();
+    expect(sm.transition).toHaveBeenCalledWith('hub', { player });
+    expect(player.loadout.passives).toEqual(['might', null, null, null, null, null]);
   });
 });

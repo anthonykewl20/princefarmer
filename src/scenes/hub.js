@@ -56,7 +56,7 @@ export const hubScene = {
     const nearEntrance = Math.hypot(dx, dy) < ENTRANCE_RADIUS;
 
     if (nearEntrance && this._input.wasJustPressed('interact')) {
-      if (enterDungeon) enterDungeon('01-stub-sandbox');
+      if (enterDungeon) enterDungeon('01-stub-sandbox', this._player);
     }
   },
   render(ctx) {

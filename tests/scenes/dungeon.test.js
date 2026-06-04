@@ -62,6 +62,39 @@ describe('dungeon scene', () => {
       expect(dungeonScene._active).toBeNull();
       warn.mockRestore();
     });
+
+    it('reuses the player passed in ctx instead of creating a fresh one', () => {
+      const { dungeon, room } = setupDungeon();
+      const player = {
+        hp: 87,
+        maxHp: 120,
+        level: 4,
+        xp: 22,
+        attackPower: 9,
+        input: null,
+        weapon: { id: null, template: null, lastAttackTime: 0, lastAbilityTime: 0 },
+        loadout: {
+          main: { weaponId: 'kampilan', abilitiesPicked: [] },
+          offhand: { weaponId: null, abilitiesPicked: [] },
+          passives: [null, null, null, null, null, null],
+        },
+        ownedPassives: [],
+        evolutionState: {},
+      };
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', { id: 'kampilan', autoAttack: { range: 1, shape: 'arc', arc: 1, tick: 1, damage: 1 }, abilities: [] }]]),
+        hubTransition: vi.fn(),
+        player,
+      });
+      expect(dungeonScene._player).toBe(player);
+      expect(dungeonScene._player.hp).toBe(87);
+      expect(dungeonScene._player.level).toBe(4);
+      expect(dungeonScene._player.x).toBe(room.spawn.x);
+      expect(dungeonScene._player.y).toBe(room.spawn.y);
+      expect(dungeonScene._player.input).toBeTruthy();
+    });
   });
 
   describe('update — vertical collision resolution (regression: ground sink-through)', () => {

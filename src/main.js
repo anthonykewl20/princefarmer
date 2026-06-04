@@ -46,8 +46,9 @@ async function boot() {
 
   // Build a dungeon-entry ctx once and reuse it for both the normal
   // hub→dungeon path and the E2E test's manual transition.
-  const dungeonCtx = (id) => ({
+  const dungeonCtx = (id, player = undefined) => ({
     dungeonId: id,
+    player,
     rooms,
     weapons,
     monsters,
@@ -69,7 +70,7 @@ async function boot() {
 
   setHubStateMachine(sm);
   setLoadoutStateMachine(sm);
-  setEnterDungeon((id) => sm.transition('dungeon', dungeonCtx(id)));
+  setEnterDungeon((id, player) => sm.transition('dungeon', dungeonCtx(id, player)));
 
   // Mount LittleJS v1.18 with the canvas as the root element and
   // route the per-frame gameUpdate callback into our state machine.
@@ -89,7 +90,7 @@ async function boot() {
     db: rooms, save, sm, rooms, dungeons,
     weapons, monsters, abilities, passives,
     transition: (s, ctx) => sm.transition(s, ctx),
-    enterDungeon: (id) => sm.transition('dungeon', dungeonCtx(id)),
+    enterDungeon: (id, player) => sm.transition('dungeon', dungeonCtx(id, player)),
   };
 
   registerServiceWorker();

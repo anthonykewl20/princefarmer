@@ -70,11 +70,12 @@ describe('hub scene', () => {
       const enterDungeon = vi.fn();
       setEnterDungeon(enterDungeon);
       setHubStateMachine({});
+      hubScene._player = { level: 2 };
       hubScene._playerX = 5; // ENTRANCE_X
       hubScene._playerY = 1; // ENTRANCE_Y
       hubScene._input = { ...makeInput(), wasJustPressed: (a) => a === 'interact' };
       hubScene.update(0.016);
-      expect(enterDungeon).toHaveBeenCalledWith('01-stub-sandbox');
+      expect(enterDungeon).toHaveBeenCalledWith('01-stub-sandbox', hubScene._player);
     });
   });
 

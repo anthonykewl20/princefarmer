@@ -16,6 +16,35 @@ import { SaveManager } from '../persistence/save.js';
 
 const FLASH_DURATION = 1.0; // seconds
 
+function buildSavePayload(player) {
+  return {
+    version: 3,
+    player: {
+      classId: player.classId,
+      hp: player.hp,
+      maxHp: player.maxHp,
+      level: player.level,
+      xp: player.xp,
+      attackPower: player.attackPower,
+    },
+    weapons: [
+      {
+        slot: 'main',
+        id: player.loadout?.main?.weaponId ?? 'kampilan',
+        abilitiesPicked: player.loadout?.main?.abilitiesPicked ?? [],
+      },
+      {
+        slot: 'offhand',
+        id: player.loadout?.offhand?.weaponId ?? null,
+        abilitiesPicked: player.loadout?.offhand?.abilitiesPicked ?? [],
+      },
+    ],
+    loadout: player.loadout,
+    ownedPassives: player.ownedPassives ?? [],
+    evolutionState: player.evolutionState ?? {},
+  };
+}
+
 export const levelupScene = {
   name: 'levelup',
 
@@ -38,7 +67,7 @@ export const levelupScene = {
     if (this._player) {
       applyLevelUpRewards(this._player);
       this._player.pendingLevelUp = false;
-      try { SaveManager.save(this._player); } catch (e) { /* best-effort */ }
+      SaveManager.save(buildSavePayload(this._player)).catch(() => {});
     }
   },
 

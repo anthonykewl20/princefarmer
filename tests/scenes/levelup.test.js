@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { levelupScene } from '../../src/scenes/levelup.js';
 import { pickPassiveChoices } from '../../src/engine/passivedrop.js';
+import { SaveManager } from '../../src/persistence/save.js';
 
 describe('levelup scene', () => {
   beforeEach(() => { levelupScene.exit(); });
@@ -35,16 +36,49 @@ describe('levelup scene', () => {
   });
 
   it('exit() applies rewards, clears pendingLevelUp, saves', () => {
-    const p = { level: 1, maxHp: 100, hp: 50, attackPower: 1, pendingLevelUp: true };
+    const p = {
+      classId: 'farmer',
+      level: 1,
+      xp: 7,
+      maxHp: 100,
+      hp: 50,
+      attackPower: 1,
+      pendingLevelUp: true,
+      loadout: {
+        main: { weaponId: 'kampilan', abilitiesPicked: ['sweep'] },
+        offhand: { weaponId: null, abilitiesPicked: [] },
+        passives: [null, null, null, null, null, null],
+      },
+      ownedPassives: [],
+      evolutionState: {},
+    };
     levelupScene._player = p;
-    // Stub the SaveManager import (we don't have a save here)
-    vi.mock('../../src/persistence/save.js', () => ({ SaveManager: { save: vi.fn() } }));
+    const saveSpy = vi.spyOn(SaveManager, 'save').mockResolvedValue();
     levelupScene.exit();
     expect(p.level).toBe(2);
     expect(p.maxHp).toBe(105);
     expect(p.hp).toBe(105);
     expect(p.attackPower).toBe(2);
     expect(p.pendingLevelUp).toBe(false);
+    expect(saveSpy).toHaveBeenCalledWith({
+      version: 3,
+      player: {
+        classId: 'farmer',
+        hp: 105,
+        maxHp: 105,
+        level: 2,
+        xp: 7,
+        attackPower: 2,
+      },
+      weapons: [
+        { slot: 'main', id: 'kampilan', abilitiesPicked: ['sweep'] },
+        { slot: 'offhand', id: null, abilitiesPicked: [] },
+      ],
+      loadout: p.loadout,
+      ownedPassives: [],
+      evolutionState: {},
+    });
+    saveSpy.mockRestore();
   });
 });
 

@@ -40,7 +40,7 @@ export const dungeonScene = {
   name: 'dungeon',
 
   enter(ctx = {}) {
-    const { dungeonId, rooms, weapons, monsters, abilities, passives, hubTransition } = ctx;
+    const { dungeonId, rooms, weapons, monsters, abilities, passives, hubTransition, player } = ctx;
     const dungeon = dungeons.get(dungeonId);
     if (!dungeon) {
       console.warn(`[dungeon] no dungeon with id "${dungeonId}"`);
@@ -61,9 +61,10 @@ export const dungeonScene = {
     // Reuse an existing player if one is present (e.g. when a caller
     // mutates loadout state and re-enters to re-resolve). Otherwise
     // create a fresh player at the room spawn.
-    if (!this._player) {
-      this._player = createPlayer(room.spawn.x, room.spawn.y, this._input);
-    }
+    this._player = player ?? this._player ?? createPlayer(room.spawn.x, room.spawn.y, this._input);
+    this._player.input = this._input;
+    this._player.x = room.spawn.x;
+    this._player.y = room.spawn.y;
     this._camera = createCamera(this._player, { width: room.width, height: room.height });
     this._grid = grid;
     this._room = room;

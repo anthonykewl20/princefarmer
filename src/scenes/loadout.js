@@ -55,7 +55,7 @@ export const loadoutScene = {
   update(dt) {
     if (!this._input) return;
     if (this._input.wasJustPressed('escape')) {
-      if (sm) sm.transition('hub');
+      if (sm) sm.transition('hub', { player: this._player });
       return;
     }
     if (this._input.wasJustPressed('interact')) {
@@ -72,7 +72,7 @@ export const loadoutScene = {
       this._step = 'passives';
     } else if (this._step === 'passives') {
       this._commitPassives();
-      if (sm) sm.transition('hub');
+      if (sm) sm.transition('hub', { player: this._player });
     }
   },
 
