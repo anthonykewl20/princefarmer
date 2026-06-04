@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrate, UPGRADES, migrateV1ToV2 } from '../../src/persistence/migration.js';
+import { migrate, UPGRADES, migrateV1ToV2, migrateV2ToV3, migrateV3ToV4 } from '../../src/persistence/migration.js';
 
 describe('migrate', () => {
   it('returns the save unchanged if already at current version', () => {
@@ -71,8 +71,6 @@ describe('UPGRADES registry', () => {
   });
 });
 
-import { migrateV2ToV3 } from '../../src/persistence/migration.js';
-
 describe('migrateV2ToV3', () => {
   it('adds weapons[] with default kampilan if missing', () => {
     const v2 = { version: 2, player: { classId: 'lakan-alon', hp: 50, maxHp: 100 } };
@@ -101,5 +99,35 @@ describe('migrateV2ToV3', () => {
 describe('UPGRADES registry (M3)', () => {
   it('includes the v2→v3 upgrade at key 3', () => {
     expect(typeof UPGRADES[3]).toBe('function');
+  });
+});
+
+describe('migrateV3ToV4', () => {
+  it('adds classId and signatureAbilityId when missing', () => {
+    const v3 = { version: 3, player: { hp: 50, maxHp: 100 } };
+    const v4 = migrateV3ToV4(v3);
+    expect(v4.version).toBe(4);
+    expect(v4.player.classId).toBe('lakan-alon');
+    expect(v4.player.signatureAbilityId).toBe('tidal-pulse');
+  });
+
+  it('preserves an existing class selection', () => {
+    const v3 = { version: 3, player: { classId: 'datu-kidlat', signatureAbilityId: 'thunder-lunge' } };
+    const v4 = migrateV3ToV4(v3);
+    expect(v4.player.classId).toBe('datu-kidlat');
+    expect(v4.player.signatureAbilityId).toBe('thunder-lunge');
+  });
+});
+
+describe('UPGRADES registry (M4)', () => {
+  it('includes the v3→v4 upgrade at key 4', () => {
+    expect(typeof UPGRADES[4]).toBe('function');
+  });
+
+  it('migrate() with default options upgrades v3 → v4', () => {
+    const v3 = { version: 3, player: { hp: 80, maxHp: 100 } };
+    const v4 = migrate(v3, { currentVersion: 4, upgrades: UPGRADES });
+    expect(v4.version).toBe(4);
+    expect(v4.player.classId).toBe('lakan-alon');
   });
 });

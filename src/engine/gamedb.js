@@ -14,6 +14,7 @@ const weaponModules = import.meta.glob('../../data/weapons.json', { eager: true 
 const monsterModules = import.meta.glob('../../data/monsters.json', { eager: true });
 const abilityModules = import.meta.glob('../../data/abilities.json', { eager: true });
 const passiveModules = import.meta.glob('../../data/passives.json', { eager: true });
+const classModules = import.meta.glob('../../data/classes.json', { eager: true });
 
 export class GameDB {
   constructor() {
@@ -129,6 +130,19 @@ export function loadAbilities() {
 export function loadPassives() {
   const db = new GameDB();
   for (const mod of Object.values(passiveModules)) {
+    const data = mod.default ?? mod;
+    const items = Array.isArray(data) ? data : [data];
+    for (const item of items) {
+      db.register(item.id, item);
+    }
+  }
+  return db;
+}
+
+/** Load all classes into a new GameDB. */
+export function loadClasses() {
+  const db = new GameDB();
+  for (const mod of Object.values(classModules)) {
     const data = mod.default ?? mod;
     const items = Array.isArray(data) ? data : [data];
     for (const item of items) {

@@ -8,8 +8,10 @@ test.describe('M3 build flow E2E', () => {
     await page.goto('/');
     await page.waitForFunction(() => window.__pf !== undefined);
 
-    // Title → Hub → Dungeon
+    // Title → Class Select → Hub
     await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__pf.sm.current === 'class-select', { timeout: 5000 });
+    await page.keyboard.press('Enter');
     await page.waitForFunction(() => window.__pf.sm.current === 'hub', { timeout: 5000 });
 
     // Open the loadout scene

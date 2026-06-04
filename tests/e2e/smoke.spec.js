@@ -13,7 +13,10 @@ test.describe('PrinceFarmer smoke test', () => {
     expect(await page.evaluate(() => window.__pf.sm.current)).toBe('title');
     expect(consoleMessages).toContain('[scene] enter: title');
 
-    await page.evaluate(() => window.__pf.transition('hub'));
+    await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__pf.sm.current === 'class-select', { timeout: 5000 });
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() => window.__pf.sm.current === 'hub', { timeout: 5000 });
     expect(await page.evaluate(() => window.__pf.sm.current)).toBe('hub');
     expect(consoleMessages).toContain('[scene] enter: hub');
 
@@ -31,22 +34,20 @@ test.describe('PrinceFarmer smoke test', () => {
 
     const roundTrip = await page.evaluate(async () => {
       const save = window.__pf.save;
-      // Write a v3 save. SaveManager.load() runs the full migration chain
-      // (v1 → v2 → v3) so the round-trip preserves M2 + M3 fields.
-      const v3Payload = {
-        version: 3,
-        player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' },
+      const v4Payload = {
+        version: 4,
+        player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon', signatureAbilityId: 'tidal-pulse' },
         weapons: [{ slot: 'main', id: 'kampilan', abilitiesPicked: ['lunging-strike', 'sweep'] }],
         loadout: { passives: [null, null, null, null, null, null] },
         ownedPassives: [],
         evolutionState: {},
       };
-      await save.write(v3Payload);
+      await save.write(v4Payload);
       return await save.load();
     });
     expect(roundTrip).toEqual({
-      version: 3,
-      player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' },
+      version: 4,
+      player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon', signatureAbilityId: 'tidal-pulse' },
       weapons: [{ slot: 'main', id: 'kampilan', abilitiesPicked: ['lunging-strike', 'sweep'] }],
       loadout: { passives: [null, null, null, null, null, null] },
       ownedPassives: [],

@@ -1,14 +1,21 @@
 /**
  * Title scene.
  *
- * Shows the game title and a "Press SPACE to start" prompt.
- * Pressing Space or Enter transitions to the hub.
+ * Shows the game title. New runs go through class select. Existing saves
+ * can continue directly to hub.
  */
 
 import { createInput } from '../engine/input.js';
+import { hydratePlayerFromSave } from '../engine/player.js';
 
 let sm = null;
+let save = null;
+let classes = null;
 export function setTitleStateMachine(s) { sm = s; }
+export function configureTitleScene({ saveManager, classesRegistry }) {
+  save = saveManager;
+  classes = classesRegistry;
+}
 
 export const titleScene = {
   name: 'title',
@@ -16,6 +23,19 @@ export const titleScene = {
     console.log('[scene] enter: title');
     this._input = createInput(globalThis);
     this._t = 0;
+    this._saveData = null;
+    this._saveReady = !save;
+    if (save) {
+      save.load()
+        .then((data) => {
+          this._saveData = data;
+          this._saveReady = true;
+        })
+        .catch(() => {
+          this._saveData = null;
+          this._saveReady = true;
+        });
+    }
   },
   exit() {
     console.log('[scene] exit: title');
@@ -23,8 +43,18 @@ export const titleScene = {
   },
   update(dt) {
     this._t += dt;
-    if (this._input && (this._input.wasJustPressed('jump') || this._input.wasJustPressed('interact'))) {
-      if (sm) sm.transition('hub');
+    if (!this._input || !this._saveReady) return;
+
+    const newRunPressed = this._input.wasJustPressed('jump');
+    const continuePressed = this._input.wasJustPressed('interact');
+
+    if (this._saveData && continuePressed) {
+      if (sm) sm.transition('hub', { player: hydratePlayerFromSave(this._saveData) });
+      return;
+    }
+
+    if (newRunPressed || (!this._saveData && continuePressed)) {
+      if (sm) sm.transition('class-select', { classes, save });
     }
   },
   render(ctx) {
@@ -45,7 +75,13 @@ export const titleScene = {
     if (Math.floor(this._t * 2) % 2 === 0) {
       ctx.fillStyle = '#f0f0f0';
       ctx.font = '24px monospace';
-      ctx.fillText('Press SPACE to start', w / 2, h / 2 + 80);
+      if (!this._saveReady) {
+        ctx.fillText('Loading save...', w / 2, h / 2 + 80);
+      } else if (this._saveData) {
+        ctx.fillText('Enter to continue  |  Space for new run', w / 2, h / 2 + 80);
+      } else {
+        ctx.fillText('Press SPACE or Enter to start', w / 2, h / 2 + 80);
+      }
     }
   },
 };

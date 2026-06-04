@@ -9,8 +9,10 @@ test.describe('M2 combat E2E', () => {
     await expect(page.locator('#game-canvas')).toBeAttached();
     await page.waitForFunction(() => window.__pf !== undefined);
 
-    // Title → Hub (press Space)
+    // Title → Class Select → Hub
     await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__pf.sm.current === 'class-select', { timeout: 5000 });
+    await page.keyboard.press('Enter');
     await page.waitForFunction(() => window.__pf.sm.current === 'hub', { timeout: 5000 });
 
     // Hub → Dungeon. Use the manual transition (with full combat ctx)
@@ -23,7 +25,9 @@ test.describe('M2 combat E2E', () => {
         weapons: window.__pf.weapons,
         monsters: window.__pf.monsters,
         abilities: window.__pf.abilities,
+        passives: window.__pf.passives,
         hubTransition: () => window.__pf.sm.transition('hub'),
+        player: window.__pf.sm.scenes.hub._player,
       });
     });
     await page.waitForFunction(() => window.__pf.sm.current === 'dungeon', { timeout: 5000 });

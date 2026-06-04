@@ -12,8 +12,10 @@ test.describe('M1 movement E2E', () => {
     // Title scene
     expect(await page.evaluate(() => window.__pf.sm.current)).toBe('title');
 
-    // Simulate Space keypress to start
+    // Start a fresh run through class select
     await page.keyboard.press('Space');
+    await page.waitForFunction(() => window.__pf.sm.current === 'class-select', { timeout: 5000 });
+    await page.keyboard.press('Enter');
     await page.waitForFunction(() => window.__pf.sm.current === 'hub', { timeout: 5000 });
     expect(logs).toContain('[scene] enter: hub');
 

@@ -79,8 +79,28 @@ export function migrateV2ToV3(s) {
   };
 }
 
+/**
+ * M4 v3 -> v4 upgrade.
+ *
+ * Persists the player's class selection explicitly in the save payload so
+ * new game flow can continue directly into the hub on reload.
+ */
+export function migrateV3ToV4(s) {
+  return {
+    ...s,
+    version: 4,
+    player: {
+      ...s.player,
+      classId: s.player?.classId ?? DEFAULT_CLASS_ID,
+      signatureAbilityId: s.player?.signatureAbilityId ?? DEFAULT_SIGNATURE_ABILITY_ID,
+    },
+  };
+}
+
 /** Registry of game-specific upgrades, keyed by target version. */
 export const UPGRADES = {
   2: migrateV1ToV2,
   3: migrateV2ToV3,
+  4: migrateV3ToV4,
 };
+import { DEFAULT_CLASS_ID, DEFAULT_SIGNATURE_ABILITY_ID } from '../engine/classes.js';

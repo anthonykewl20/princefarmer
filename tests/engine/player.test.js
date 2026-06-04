@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createPlayer, MAX_HP, MAX_RUN_SPEED, JUMP_IMPULSE, CLIMB_SPEED, FALL_DAMAGE_THRESHOLD } from '../../src/engine/player.js';
+import { createPlayer, MAX_HP, MAX_RUN_SPEED, JUMP_IMPULSE, CLIMB_SPEED, FALL_DAMAGE_THRESHOLD, serializePlayerToSave, hydratePlayerFromSave } from '../../src/engine/player.js';
 
 describe('player constants', () => {
   it('exports tunables', () => {
@@ -208,5 +208,79 @@ describe('player M3 fields', () => {
   it('initializes evolutionState as an empty object', () => {
     const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
     expect(p.evolutionState).toEqual({});
+  });
+
+  it('initializes class defaults for the M4 start flow', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    expect(p.classId).toBe('lakan-alon');
+    expect(p.signatureAbilityId).toBe('tidal-pulse');
+  });
+});
+
+describe('player save helpers', () => {
+  it('serializes the runtime player into a v4 save payload', () => {
+    const p = createPlayer(0, 0, { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} });
+    p.classId = 'datu-kidlat';
+    p.signatureAbilityId = 'thunder-lunge';
+    p.loadout.main.abilitiesPicked = ['sweep', 'thrust'];
+    p.loadout.offhand.weaponId = 'baladaw';
+    p.loadout.offhand.abilitiesPicked = ['flame-slash', 'ember-step'];
+    p.loadout.passives = ['stormcall', null, null, null, null, null];
+    p.ownedPassives = ['stormcall'];
+    p.evolutionState = { kampilan: { tier: 1 } };
+
+    expect(serializePlayerToSave(p)).toEqual({
+      version: 4,
+      player: {
+        classId: 'datu-kidlat',
+        signatureAbilityId: 'thunder-lunge',
+        hp: 100,
+        maxHp: 100,
+        level: 1,
+        xp: 0,
+        attackPower: 1,
+      },
+      weapons: [
+        { slot: 'main', id: 'kampilan', abilitiesPicked: ['sweep', 'thrust'] },
+        { slot: 'offhand', id: 'baladaw', abilitiesPicked: ['flame-slash', 'ember-step'] },
+      ],
+      loadout: { passives: ['stormcall', null, null, null, null, null] },
+      ownedPassives: ['stormcall'],
+      evolutionState: { kampilan: { tier: 1 } },
+    });
+  });
+
+  it('hydrates a runtime player from save data', () => {
+    const player = hydratePlayerFromSave({
+      version: 4,
+      player: {
+        classId: 'datu-hiraya',
+        signatureAbilityId: 'earthshaker',
+        hp: 83,
+        maxHp: 120,
+        level: 6,
+        xp: 15,
+        attackPower: 5,
+      },
+      weapons: [
+        { slot: 'main', id: 'baladaw', abilitiesPicked: ['ember-step', 'solar-thrust'] },
+        { slot: 'offhand', id: 'kampilan', abilitiesPicked: ['sweep', 'lunging-strike'] },
+      ],
+      loadout: { passives: ['stoneheart', null, null, null, null, null] },
+      ownedPassives: ['stoneheart'],
+      evolutionState: { baladaw: { tier: 1 } },
+    });
+
+    expect(player.classId).toBe('datu-hiraya');
+    expect(player.signatureAbilityId).toBe('earthshaker');
+    expect(player.hp).toBe(83);
+    expect(player.maxHp).toBe(120);
+    expect(player.level).toBe(6);
+    expect(player.attackPower).toBe(5);
+    expect(player.loadout.main).toEqual({ weaponId: 'baladaw', abilitiesPicked: ['ember-step', 'solar-thrust'] });
+    expect(player.loadout.offhand).toEqual({ weaponId: 'kampilan', abilitiesPicked: ['sweep', 'lunging-strike'] });
+    expect(player.loadout.passives).toEqual(['stoneheart', null, null, null, null, null]);
+    expect(player.ownedPassives).toEqual(['stoneheart']);
+    expect(player.evolutionState).toEqual({ baladaw: { tier: 1 } });
   });
 });

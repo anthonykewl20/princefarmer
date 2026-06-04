@@ -38,6 +38,7 @@ describe('levelup scene', () => {
   it('exit() applies rewards, clears pendingLevelUp, saves', () => {
     const p = {
       classId: 'farmer',
+      signatureAbilityId: 'tidal-pulse',
       level: 1,
       xp: 7,
       maxHp: 100,
@@ -61,9 +62,10 @@ describe('levelup scene', () => {
     expect(p.attackPower).toBe(2);
     expect(p.pendingLevelUp).toBe(false);
     expect(saveSpy).toHaveBeenCalledWith({
-      version: 3,
+      version: 4,
       player: {
         classId: 'farmer',
+        signatureAbilityId: 'tidal-pulse',
         hp: 105,
         maxHp: 105,
         level: 2,
@@ -74,7 +76,7 @@ describe('levelup scene', () => {
         { slot: 'main', id: 'kampilan', abilitiesPicked: ['sweep'] },
         { slot: 'offhand', id: null, abilitiesPicked: [] },
       ],
-      loadout: p.loadout,
+      loadout: { passives: [null, null, null, null, null, null] },
       ownedPassives: [],
       evolutionState: {},
     });

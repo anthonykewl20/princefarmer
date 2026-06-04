@@ -73,6 +73,7 @@ export const dungeonScene = {
 
     // M2: entity arrays + registries
     this._weapons = weapons || new Map();
+    this._abilities = abilities || new Map();
     this._passives = passives || new Map();
     this._monsters = [];
     this._gems = [];
@@ -161,38 +162,31 @@ export const dungeonScene = {
       if (now - p.weapon.lastAttackTime >= w.tick) {
         const target = this._findNearestEnemy(p, w.range);
         if (target && resolveShape(p, target, w)) {
-          const result = applyHit(target, w.damage, p, this._rng);
-          console.log(`[combat] hit: ${target.id} for ${result.damage}${result.crit ? ' (CRIT!)' : ''}`);
-
-          // M3: track per-weapon element damage and kills
-          const weaponId = p.weapon.id;
-          if (!p.evolutionState[weaponId]) {
-            const zero = Object.fromEntries(ELEMENTS.map((e) => [e.id, 0]));
-            p.evolutionState[weaponId] = { tier: p.weapon.template.tier || 0, kills: 0, elementDamage: zero };
-          }
-          const abilityElement = p.weapon.template.element;
-          if (abilityElement) p.evolutionState[weaponId].elementDamage[abilityElement] += result.damage;
-          if (result.killed) {
-            p.evolutionState[weaponId].kills++;
-            this._onMonsterKilled(target);
-            // Tier-2 evolution
-            const t2 = resolveEvolutionTier2(p.weapon.template, p.evolutionState[weaponId], this._weapons);
-            if (t2) {
-              console.log(`[evolution] ${p.weapon.id} → ${t2.id}`);
-              p.weapon.template = t2;
-              p.weapon.id = t2.id;
-              p.evolutionState[weaponId].tier = t2.tier;
-            }
-          }
+          this._applyResolvedHit(target, w.damage, p.weapon.template.element);
           p.weapon.lastAttackTime = now;
         }
       }
     }
 
-    // M2: ability
-    if (p.weapon.template && this._input.wasJustPressed('attack2')) {
-      const abilityId = p.weapon.template.abilities[0];
-      // ... (left as a follow-up; M2 ships auto-attack first)
+    // M4: class signature ability
+    if (this._input.wasJustPressed('attack2')) {
+      const ability = this._abilities.get(p.signatureAbilityId);
+      const now = performance.now() / 1000;
+      if (ability && now - (p.signatureLastUsedTime || 0) >= ability.cooldown) {
+        const shape = {
+          ...ability.aoe,
+          radius: ability.aoe?.radius ?? ability.range,
+          range: ability.aoe?.range ?? ability.range,
+        };
+        let hitAny = false;
+        for (const target of this._monsters) {
+          if (!target.alive) continue;
+          if (!resolveShape(p, target, shape)) continue;
+          this._applyResolvedHit(target, ability.damage, ability.element, ability.id);
+          hitAny = true;
+        }
+        if (hitAny) p.signatureLastUsedTime = now;
+      }
     }
 
     // M2: tick monsters
@@ -286,6 +280,31 @@ export const dungeonScene = {
     p._loadoutBonuses = bonuses;
     p._effectiveStats = effective;
     p.attackPower = effective.attackPower;
+  },
+
+  _applyResolvedHit(target, baseDamage, element, label = 'hit') {
+    const p = this._player;
+    const result = applyHit(target, baseDamage, p, this._rng);
+    console.log(`[combat] ${label}: ${target.id} for ${result.damage}${result.crit ? ' (CRIT!)' : ''}`);
+
+    const weaponId = p.weapon.id;
+    if (!p.evolutionState[weaponId]) {
+      const zero = Object.fromEntries(ELEMENTS.map((e) => [e.id, 0]));
+      p.evolutionState[weaponId] = { tier: p.weapon.template.tier || 0, kills: 0, elementDamage: zero };
+    }
+    if (element) p.evolutionState[weaponId].elementDamage[element] += result.damage;
+    if (result.killed) {
+      p.evolutionState[weaponId].kills++;
+      this._onMonsterKilled(target);
+      const t2 = resolveEvolutionTier2(p.weapon.template, p.evolutionState[weaponId], this._weapons);
+      if (t2) {
+        console.log(`[evolution] ${p.weapon.id} → ${t2.id}`);
+        p.weapon.template = t2;
+        p.weapon.id = t2.id;
+        p.evolutionState[weaponId].tier = t2.tier;
+      }
+    }
+    return result;
   },
 
   _onMonsterKilled(monster) {
