@@ -178,6 +178,7 @@ describe('dungeon scene', () => {
         abilities: new Map(),
         hubTransition: vi.fn(),
       });
+      dungeonScene._rng = () => 0.5;
 
       // Set the player's weapon and force a cooldowned state
       const p = dungeonScene._player;

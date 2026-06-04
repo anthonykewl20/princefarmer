@@ -16,6 +16,7 @@
 
 import { integrate } from './physics.js';
 import { BEHAVIORS } from './behaviors/index.js';
+import { renderMonsterSprite } from '../graphics/sprite-assets.js';
 
 /**
  * Create a monster entity.
@@ -62,6 +63,9 @@ export function tickMonster(m, dt, world) {
  * Replaced by PixelLab-generated sprite in M2.1.
  */
 function drawMonster(m, ctx) {
+  const drawn = renderMonsterSprite(ctx, m);
+  if (drawn) return;
+
   ctx.fillStyle = '#c0392b';
   ctx.fillRect(m.x - 0.4, m.y - 0.4, 0.8, 0.8);
 }

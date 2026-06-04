@@ -26,6 +26,7 @@ import { applyHit, resolveShape } from '../engine/combat.js';
 import { triggerDeath } from '../engine/death.js';
 import { resolveEvolutionTier1, resolveEvolutionTier2, applyLoadout } from '../engine/build.js';
 import { ELEMENTS } from '../engine/elements.js';
+import { renderHeroSprite } from '../graphics/sprite-assets.js';
 
 // Seeded RNG factory — deterministic for tests; non-deterministic in prod.
 function makeRng(seed) {
@@ -338,8 +339,11 @@ export const dungeonScene = {
     }
     // Player
     const p = this._player;
-    ctx.fillStyle = '#f4c089';
-    ctx.fillRect(p.x - 0.4, p.y - 0.8, 0.8, 0.8);
+    const drawn = renderHeroSprite(ctx, p);
+    if (!drawn) {
+      ctx.fillStyle = '#f4c089';
+      ctx.fillRect(p.x - 0.4, p.y - 0.8, 0.8, 0.8);
+    }
     // M2: monsters
     for (const m of this._monsters) m.render(ctx);
     // M2: gems

@@ -8,6 +8,7 @@
 //  5. Hooks the state machine's update into the LittleJS game loop.
 //  6. Exposes a global for the Playwright E2E test to drive transitions.
 
+import * as littlejs from 'littlejsengine';
 import { engineInit, timeDelta, mainContext, mainCanvas } from 'littlejsengine';
 import { loadJSON } from './utils/json-loader.js';
 import { GameDB, loadRooms, loadDungeons, loadWeapons, loadMonsters, loadAbilities, loadPassives, loadClasses } from './engine/gamedb.js';
@@ -21,6 +22,7 @@ import { levelupScene } from './scenes/levelup.js';
 import { classSelectScene } from './scenes/class-select.js';
 import { loadoutScene, setLoadoutStateMachine } from './scenes/loadout.js';
 import { registerServiceWorker } from './sw-register.js';
+import { getSpriteSources, refreshSpriteBank, setSpriteRuntime } from './graphics/sprite-assets.js';
 
 const root = document.getElementById('game-root');
 if (!root) throw new Error('game-root not found in DOM');
@@ -81,12 +83,15 @@ async function boot() {
   // route the per-frame gameUpdate callback into our state machine.
   // LittleJS exposes the frame's delta time as the `timeDelta` export.
   engineInit(
-    undefined,                              // gameInit (no async init needed)
+    () => {
+      setSpriteRuntime(littlejs);
+      refreshSpriteBank(littlejs);
+    },                                      // gameInit
     () => sm.update(timeDelta),             // gameUpdate
     undefined,                              // gameUpdatePost
     undefined,                              // gameRender
     () => sm.render(mainContext),           // gameRenderPost
-    [],                                     // imageSources
+    getSpriteSources(),                     // imageSources
     root                                    // rootElement
   );
 
