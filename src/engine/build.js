@@ -91,3 +91,25 @@ export function computeComboBonus(loadout, passiveRegistry) {
   if (n >= 3) return 1.10;
   return 1;
 }
+
+/**
+ * Resolve a tier-1 evolution at run start. Iterates the weapon's
+ * `evolvesInto` recipes in JSON order; the first whose condition holds
+ * wins. Ties broken by declaration order.
+ *
+ * @returns {object|null} the evolved weapon template, or null
+ */
+export function resolveEvolutionTier1(weapon, loadout, weaponRegistry, passiveRegistry) {
+  if (!weapon?.evolvesInto) return null;
+  for (const [key, evolvedId] of Object.entries(weapon.evolvesInto)) {
+    const match = key.match(/^withPassive:([^:]+):count:(\d+)$/);
+    if (!match) continue;
+    const [, passiveId, countStr] = match;
+    const needed = Number(countStr);
+    if (countPassiveInLoadout(loadout, passiveId) >= needed) {
+      const evolved = weaponRegistry.get(evolvedId);
+      if (evolved) return evolved;
+    }
+  }
+  return null;
+}

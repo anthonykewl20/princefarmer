@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   canPickAbility, validateAbilityPick, countPassiveInLoadout,
   computeElementMultiplier, computeComboBonus, distinctElementsInLoadout,
+  resolveEvolutionTier1,
 } from '../../src/engine/build.js';
 
 const KAMPILAN = {
@@ -129,5 +130,47 @@ describe('computeComboBonus', () => {
       passives: ['might', 'haste', 'stoneheart', 'stormcall', null, null],
     };
     expect(computeComboBonus(loadout, PASSIVES)).toBe(1.25);
+  });
+});
+
+const KAMPILAN_T1 = {
+  id: 'kampilan', tier: 0,
+  element: 'spirit',
+  evolvesInto: {
+    'withPassive:might:count:3': 'tiger-claw',
+    'withPassive:haste:count:3': 'windcutter',
+  },
+};
+const WEAPONS = new Map([
+  ['kampilan', KAMPILAN_T1],
+  ['tiger-claw', { id: 'tiger-claw', tier: 2, parentId: 'kampilan' }],
+  ['windcutter', { id: 'windcutter', tier: 2, parentId: 'kampilan' }],
+]);
+
+describe('resolveEvolutionTier1', () => {
+  it('returns null when no recipe matches', () => {
+    const loadout = { passives: ['vigor', null, null, null, null, null] };
+    expect(resolveEvolutionTier1(KAMPILAN_T1, loadout, WEAPONS, PASSIVES)).toBeNull();
+  });
+  it('returns the evolved weapon when a recipe matches', () => {
+    const loadout = { passives: ['might', 'might', 'might', null, null, null] };
+    const result = resolveEvolutionTier1(KAMPILAN_T1, loadout, WEAPONS, PASSIVES);
+    expect(result.id).toBe('tiger-claw');
+  });
+  it('picks the first declared recipe on ties', () => {
+    const loadout = { passives: ['might', 'haste', 'might', null, null, null] };
+    // might count = 2, haste count = 1 — neither reaches 3
+    const noMatch = resolveEvolutionTier1(KAMPILAN_T1, loadout, WEAPONS, PASSIVES);
+    expect(noMatch).toBeNull();
+
+    // both reach threshold → first declared wins (tiger-claw)
+    const both = { passives: ['might', 'might', 'might', 'haste', 'haste', 'haste'] };
+    const result = resolveEvolutionTier1(KAMPILAN_T1, both, WEAPONS, PASSIVES);
+    expect(result.id).toBe('tiger-claw');
+  });
+  it('returns null if the recipe target is not in the weapon registry', () => {
+    const bad = { id: 'kampilan', tier: 0, evolvesInto: { 'withPassive:might:count:3': 'ghost' } };
+    const loadout = { passives: ['might', 'might', 'might', null, null, null] };
+    expect(resolveEvolutionTier1(bad, loadout, WEAPONS, PASSIVES)).toBeNull();
   });
 });
