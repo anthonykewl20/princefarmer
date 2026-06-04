@@ -59,7 +59,28 @@ export function migrateV1ToV2(s) {
   };
 }
 
+/**
+ * M3 v2 → v3 upgrade.
+ *
+ * Adds weapons[] (with a default kampilan), the empty passive loadout
+ * (6 slots), ownedPassives, and evolutionState. Existing weapons are
+ * preserved; existing fields are never overwritten.
+ */
+export function migrateV2ToV3(s) {
+  return {
+    ...s,
+    version: 3,
+    weapons: s.weapons ?? [
+      { slot: 'main', id: 'kampilan', abilitiesPicked: ['lunging-strike', 'sweep'] },
+    ],
+    loadout: s.loadout ?? { passives: [null, null, null, null, null, null] },
+    ownedPassives: s.ownedPassives ?? [],
+    evolutionState: s.evolutionState ?? {},
+  };
+}
+
 /** Registry of game-specific upgrades, keyed by target version. */
 export const UPGRADES = {
   2: migrateV1ToV2,
+  3: migrateV2ToV3,
 };
