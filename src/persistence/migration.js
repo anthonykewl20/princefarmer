@@ -31,3 +31,35 @@ export function migrate(save, options = {}) {
   }
   return s;
 }
+
+/**
+ * M2 v1 → v2 upgrade.
+ *
+ * v1 → v2 adds combat state to the player (level, xp, attackPower) and a
+ * default weapons array seeded with the M2 starting weapon (kampilan).
+ * Existing fields are preserved (re-runs are safe — fields are not
+ * overwritten if already present).
+ *
+ * @param {object} s - v1 save
+ * @returns {object} v2 save
+ */
+export function migrateV1ToV2(s) {
+  return {
+    ...s,
+    version: 2,
+    player: {
+      ...s.player,
+      level: s.player.level ?? 1,
+      xp: s.player.xp ?? 0,
+      attackPower: s.player.attackPower ?? 1,
+    },
+    weapons: s.weapons ?? [
+      { slot: 'main', id: 'kampilan', abilitiesPicked: [] },
+    ],
+  };
+}
+
+/** Registry of game-specific upgrades, keyed by target version. */
+export const UPGRADES = {
+  2: migrateV1ToV2,
+};

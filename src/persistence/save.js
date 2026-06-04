@@ -1,3 +1,5 @@
+import { migrate, UPGRADES } from './migration.js';
+
 /**
  * SaveManager wraps IndexedDB to provide a simple read/write/delete API
  * for a single named save slot. The slot stores one JSON object.
@@ -37,6 +39,8 @@ export class SaveManager {
 
   /**
    * Read the save. Returns the parsed object, or null if no save exists.
+   * The save is run through `migrate()` so callers always receive the
+   * current save version.
    * @returns {Promise<object|null>}
    */
   async load() {
@@ -44,7 +48,20 @@ export class SaveManager {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(this._storeName, 'readonly');
       const req = tx.objectStore(this._storeName).get(this._key);
-      req.onsuccess = () => resolve(req.result ?? null);
+      req.onsuccess = () => {
+        const raw = req.result ?? null;
+        if (raw == null) return resolve(null);
+        // M2: default currentVersion to the highest version we have an
+        // upgrade for. Bump this when v3 lands.
+        const currentVersion = Math.max(...Object.keys(UPGRADES).map(Number), 1);
+        try {
+          resolve(migrate(raw, { currentVersion, upgrades: UPGRADES }));
+        } catch (e) {
+          // Migration is best-effort: if the save is unrecoverable,
+          // surface the error so the caller can decide what to do.
+          reject(e);
+        }
+      };
       req.onerror = () => reject(req.error);
     });
   }
