@@ -13,7 +13,7 @@ describe('weapons.json', () => {
     expect(k.autoAttack.range).toBe(1.2);
     expect(k.autoAttack.tick).toBe(0.6);
     expect(k.autoAttack.damage).toBe(20);
-    expect(k.abilities).toEqual(['lunging-strike']);
+    expect(k.abilities).toContain('lunging-strike');
   });
 
   it('every weapon has required fields', () => {
@@ -29,5 +29,32 @@ describe('weapons.json', () => {
       expect(['arc', 'line', 'circle', 'cone']).toContain(w.autoAttack.shape);
       expect(Array.isArray(w.abilities)).toBe(true);
     }
+  });
+});
+
+describe('M3 weapon fields', () => {
+  it('kampilan has element and evolvesInto', () => {
+    const k = weapons.find((w) => w.id === 'kampilan');
+    expect(k.element).toBe('spirit');
+    expect(k.evolvesInto).toBeTruthy();
+    expect(k.evolvesInto['withPassive:might:count:3']).toBe('tiger-claw');
+  });
+
+  it('baladaw exists and is a fire-element sword', () => {
+    const b = weapons.find((w) => w.id === 'baladaw');
+    expect(b).toBeTruthy();
+    expect(b.type).toBe('melee');
+    expect(b.element).toBe('fire');
+    expect(b.abilities.length).toBe(4);
+  });
+
+  it('tiger-claw (tier 2) has evolutionTrigger and tier2Paths', () => {
+    const t = weapons.find((w) => w.id === 'tiger-claw');
+    expect(t).toBeTruthy();
+    expect(t.tier).toBe(2);
+    expect(t.parentId).toBe('kampilan');
+    expect(t.evolutionTrigger).toMatch(/^kills:\d+$/);
+    expect(Array.isArray(t.tier2Paths)).toBe(true);
+    expect(t.tier2Paths.length).toBeGreaterThanOrEqual(1);
   });
 });
