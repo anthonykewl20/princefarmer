@@ -76,7 +76,7 @@ tests/scenes/hub.test.js            # L opens loadout
 
 The 6 elements are the spine of M3 — every weapon, passive, and UI surface uses them. Ship this first so other tasks can import it.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/engine/elements.test.js`:
 
@@ -129,12 +129,12 @@ describe('getElement', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/elements.test.js`
 Expected: FAIL — `Cannot find module '../../src/engine/elements.js'`
 
-- [ ] **Step 3: Implement `elements.js`**
+- [x] **Step 3: Implement `elements.js`**
 
 Create `src/engine/elements.js`:
 
@@ -169,12 +169,12 @@ export function getElement(id) {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/elements.test.js`
 Expected: PASS (7 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/elements.js tests/engine/elements.test.js
@@ -191,7 +191,7 @@ git commit -m "feat(elements): add 6-element registry (M3 Task 1)"
 
 The passive registry has 6 starter passives, one per element. They cover the test fixtures for every element path.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/data/passives.test.js`:
 
@@ -229,12 +229,12 @@ describe('passives.json', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/data/passives.test.js`
 Expected: FAIL — `Cannot find module '../../data/passives.json'`
 
-- [ ] **Step 3: Create `data/passives.json`**
+- [x] **Step 3: Create `data/passives.json`**
 
 ```json
 [
@@ -289,12 +289,12 @@ Expected: FAIL — `Cannot find module '../../data/passives.json'`
 ]
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/data/passives.test.js`
 Expected: PASS (3 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add data/passives.json tests/data/passives.test.js
@@ -311,7 +311,7 @@ git commit -m "feat(data): add 6 starter passives (M3 Task 2)"
 
 The M2 weapons file has only kampilan. M3 adds an element field, the `evolvesInto` recipe, and one new weapon (`baladaw`, fire) for the off-hand slot.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/data/weapons.test.js`:
 
@@ -344,12 +344,12 @@ describe('M3 weapon fields', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/data/weapons.test.js`
 Expected: FAIL — `kampilan.element` is undefined
 
-- [ ] **Step 3: Replace `data/weapons.json`**
+- [x] **Step 3: Replace `data/weapons.json`**
 
 ```json
 [
@@ -430,12 +430,12 @@ Expected: FAIL — `kampilan.element` is undefined
 ]
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/data/weapons.test.js`
 Expected: PASS (existing 2 tests + 3 new = 5)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add data/weapons.json tests/data/weapons.test.js
@@ -451,7 +451,7 @@ git commit -m "feat(data): add element field, tier-1 recipes, baladaw + tier-2 f
 
 A standalone test that cross-references every recipe in `weapons.json` against the `passives.json` registry. Catches typos at load time.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/data/evolutions.test.js`:
 
@@ -497,12 +497,12 @@ describe('evolution recipes (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it passes**
+- [x] **Step 2: Run the test, verify it passes**
 
 Run: `npm test -- tests/data/evolutions.test.js`
 Expected: PASS (3 tests). If any fail, the JSON from Task 3 has typos — fix them.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/data/evolutions.test.js
@@ -519,7 +519,7 @@ git commit -m "test(data): cross-check evolution recipes (M3 Task 4)"
 
 GameDB already has `loadWeapons`, `loadMonsters`, `loadAbilities`. M3 adds `loadPassives` using the same `import.meta.glob` pattern.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/engine/gamedb.test.js`:
 
@@ -535,12 +535,12 @@ describe('loadPassives (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/gamedb.test.js`
 Expected: FAIL — `loadPassives is not a function`
 
-- [ ] **Step 3: Add the loader**
+- [x] **Step 3: Add the loader**
 
 In `src/engine/gamedb.js`, append a new glob import alongside the others:
 
@@ -565,12 +565,12 @@ export function loadPassives() {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/gamedb.test.js`
 Expected: PASS (existing + 1 new = 10)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/gamedb.js tests/engine/gamedb.test.js
@@ -589,7 +589,7 @@ git commit -m "feat(gamedb): load passives (M3 Task 5)"
 
 `build.js` is the heart of M3: pure functions for loadout validation, evolution, and element math. Start with the smallest, most-testable functions.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/engine/build.test.js`:
 
@@ -653,12 +653,12 @@ describe('countPassiveInLoadout', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: FAIL — `Cannot find module '../../src/engine/build.js'`
 
-- [ ] **Step 3: Implement `build.js` (initial slice)**
+- [x] **Step 3: Implement `build.js` (initial slice)**
 
 Create `src/engine/build.js`:
 
@@ -708,12 +708,12 @@ export function countPassiveInLoadout(loadout, passiveId) {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: PASS (12 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/build.js tests/engine/build.test.js
@@ -728,7 +728,7 @@ git commit -m "feat(build): add canPickAbility, validateAbilityPick, countPassiv
 - Modify: `src/engine/build.js`
 - Modify: `tests/engine/build.test.js`
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 Append to `tests/engine/build.test.js`:
 
@@ -814,12 +814,12 @@ describe('computeComboBonus', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: FAIL — `computeElementMultiplier is not defined`
 
-- [ ] **Step 3: Append the implementations to `build.js`**
+- [x] **Step 3: Append the implementations to `build.js`**
 
 ```js
 /**
@@ -873,12 +873,12 @@ export function computeComboBonus(loadout, passiveRegistry) {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: PASS (12 + 8 = 20 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/build.js tests/engine/build.test.js
@@ -895,7 +895,7 @@ git commit -m "feat(build): add element multiplier + combo bonus (M3 Task 7)"
 
 `resolveEvolutionTier1(weapon, loadout, weaponRegistry, passiveRegistry)` — given a weapon, evaluate its `evolvesInto` recipes against the loadout. Returns the evolved weapon or `null` if no recipe matches.
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 Append to `tests/engine/build.test.js`:
 
@@ -948,12 +948,12 @@ describe('resolveEvolutionTier1', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: FAIL — `resolveEvolutionTier1 is not defined`
 
-- [ ] **Step 3: Append the implementation to `build.js`**
+- [x] **Step 3: Append the implementation to `build.js`**
 
 ```js
 /**
@@ -979,12 +979,12 @@ export function resolveEvolutionTier1(weapon, loadout, weaponRegistry, passiveRe
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: PASS (20 + 4 = 24 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/build.js tests/engine/build.test.js
@@ -1001,7 +1001,7 @@ git commit -m "feat(build): add resolveEvolutionTier1 (M3 Task 8)"
 
 Tier-2 evolution is threshold + element. Takes the current evolution state and decides if a tier-2 path should be taken.
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 Append to `tests/engine/build.test.js`:
 
@@ -1066,12 +1066,12 @@ describe('resolveEvolutionTier2', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: FAIL — `resolveEvolutionTier2 is not defined`
 
-- [ ] **Step 3: Append the implementation to `build.js`**
+- [x] **Step 3: Append the implementation to `build.js`**
 
 ```js
 /**
@@ -1120,12 +1120,12 @@ export function resolveEvolutionTier2(currentForm, state, weaponRegistry) {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: PASS (24 + 7 = 31 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/build.js tests/engine/build.test.js
@@ -1142,7 +1142,7 @@ git commit -m "feat(build): add resolveEvolutionTier2 + dominantElement (M3 Task
 
 The single entry point the dungeon calls at `enter()`. Reads the loadout, applies passive effects, and stamps resolved values onto the player. Pure: returns a new `appliedLoadout` object the dungeon can use to drive combat.
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 Append to `tests/engine/build.test.js`:
 
@@ -1180,12 +1180,12 @@ describe('applyLoadout', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: FAIL — `applyLoadout is not defined`
 
-- [ ] **Step 3: Append the implementation to `build.js`**
+- [x] **Step 3: Append the implementation to `build.js`**
 
 ```js
 const KNOWN_STATS = ['attackPower', 'maxHp', 'speed', 'critChance', 'lifesteal'];
@@ -1228,12 +1228,12 @@ export function applyLoadout(player, loadout, passiveRegistry) {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/build.test.js`
 Expected: PASS (31 + 5 = 36 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/build.js tests/engine/build.test.js
@@ -1252,7 +1252,7 @@ git commit -m "feat(build): add applyLoadout (M3 Task 10)"
 
 Pure module for level-up choice selection. Returns 3 passive ids, never offers owned, falls back to stack-upgrades when pool is exhausted.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `tests/engine/passivedrop.test.js`:
 
@@ -1329,12 +1329,12 @@ describe('pickPassiveChoices', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/passivedrop.test.js`
 Expected: FAIL — module not found
 
-- [ ] **Step 3: Implement `passivedrop.js`**
+- [x] **Step 3: Implement `passivedrop.js`**
 
 Create `src/engine/passivedrop.js`:
 
@@ -1422,12 +1422,12 @@ function pickStackUpgrade(registry, slots, used, rng) {
 }
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/passivedrop.test.js`
 Expected: PASS (6 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/passivedrop.js tests/engine/passivedrop.test.js
@@ -1446,7 +1446,7 @@ git commit -m "feat(passivedrop): add pickPassiveChoices (M3 Task 11)"
 
 The player gains three new fields: `loadout` (active build), `ownedPassives` (the pool that grows over time), and `evolutionState` (per-weapon evolution tracking).
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/engine/player.test.js`:
 
@@ -1473,12 +1473,12 @@ describe('player M3 fields', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/engine/player.test.js`
 Expected: FAIL — `p.loadout` is undefined
 
-- [ ] **Step 3: Extend `createPlayer` in `src/engine/player.js`**
+- [x] **Step 3: Extend `createPlayer` in `src/engine/player.js`**
 
 In the `createPlayer` factory, add the M3 fields after the existing M2 block:
 
@@ -1495,12 +1495,12 @@ In the `createPlayer` factory, add the M3 fields after the existing M2 block:
 
 (Insert right after the `weapon: { ... }` block.)
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/engine/player.test.js`
 Expected: PASS (existing 21 + 3 new = 24 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/player.js tests/engine/player.test.js
@@ -1519,7 +1519,7 @@ git commit -m "feat(player): add loadout, ownedPassives, evolutionState (M3 Task
 
 The save bumps from v2 to v3. The migration adds the new loadout/passives/evolutionState fields and seeds a sensible default weapon.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/persistence/migration.test.js`:
 
@@ -1558,12 +1558,12 @@ describe('UPGRADES registry (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/persistence/migration.test.js`
 Expected: FAIL — `migrateV2ToV3 is not a function`
 
-- [ ] **Step 3: Add the migration to `src/persistence/migration.js`**
+- [x] **Step 3: Add the migration to `src/persistence/migration.js`**
 
 ```js
 /**
@@ -1589,12 +1589,12 @@ export function migrateV2ToV3(s) {
 
 And add `3: migrateV2ToV3` to the `UPGRADES` registry at the bottom of the file.
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/persistence/migration.test.js`
 Expected: PASS (existing 4 + 4 new = 8 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/persistence/migration.js tests/persistence/migration.test.js
@@ -1610,7 +1610,7 @@ git commit -m "feat(save): add v2→v3 migration (loadout, ownedPassives, evolut
 
 The existing save round-trip tests write v2 payloads. They should now write v3 and assert that `load()` returns v3 (with the new fields). The `SaveManager.load()` chain already picks up v3 from the `UPGRADES` registry.
 
-- [ ] **Step 1: Update existing tests**
+- [x] **Step 1: Update existing tests**
 
 In `tests/persistence/save.test.js`, update each payload's `version` field to `3` and add the M3 fields:
 
@@ -1665,12 +1665,12 @@ In `tests/persistence/save.test.js`, update each payload's `version` field to `3
   });
 ```
 
-- [ ] **Step 2: Run the test, verify it passes**
+- [x] **Step 2: Run the test, verify it passes**
 
 Run: `npm test -- tests/persistence/save.test.js`
 Expected: PASS (existing 6 + 1 new = 7 tests)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/persistence/save.test.js
@@ -1689,7 +1689,7 @@ git commit -m "test(save): update round-trip to v3 (M3 Task 14)"
 
 At dungeon `enter()`, resolve the player's loadout: pick the main weapon, evolve tier-1 if a recipe matches, and apply passive bonuses to the player. The dungeon's auto-attack then uses the resolved main weapon's stats.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/dungeon.test.js`:
 
@@ -1769,12 +1769,12 @@ describe('update — loadout resolution (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/dungeon.test.js`
 Expected: FAIL — `_player.evolutionState` is undefined; loadout resolution not wired
 
-- [ ] **Step 3: Wire `enter()` to resolve the loadout**
+- [x] **Step 3: Wire `enter()` to resolve the loadout**
 
 In `src/scenes/dungeon.js`, modify the `enter()` method to:
 
@@ -1840,12 +1840,12 @@ export const dungeonScene = {
 };
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/dungeon.test.js`
 Expected: PASS (existing 6 + 2 new = 8 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/dungeon.js tests/scenes/dungeon.test.js
@@ -1862,7 +1862,7 @@ git commit -m "feat(dungeon): resolve loadout + tier-1 evolution at enter (M3 Ta
 
 When the auto-attack kills a monster, increment the per-weapon kill count. When the auto-attack hits, add the damage to the per-element damage map. On a kill, evaluate `resolveEvolutionTier2` and evolve if a path matches.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/dungeon.test.js`:
 
@@ -1911,12 +1911,12 @@ describe('update — tier-2 evolution tracking (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/dungeon.test.js`
 Expected: FAIL — `evolutionState` is not updated
 
-- [ ] **Step 3: Wire the tracking into `dungeon.js`**
+- [x] **Step 3: Wire the tracking into `dungeon.js`**
 
 Inside the auto-attack block (after `applyHit`):
 
@@ -1954,12 +1954,12 @@ import { resolveEvolutionTier1, resolveEvolutionTier2, applyLoadout } from '../e
 import { ELEMENTS } from '../engine/elements.js';
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/dungeon.test.js`
 Expected: PASS (8 + 1 = 9 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/dungeon.js tests/scenes/dungeon.test.js
@@ -1978,7 +1978,7 @@ git commit -m "feat(dungeon): track tier-2 evolution (kills + element damage) (M
 
 The loadout scene is a 3-step wizard. This task ships the skeleton: `enter`, `update`, `render`, and step navigation. Subsequent tasks add the picker logic per step.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/scenes/loadout.test.js`:
 
@@ -2024,12 +2024,12 @@ describe('loadout scene skeleton (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: FAIL — module not found
 
-- [ ] **Step 3: Implement the scene skeleton**
+- [x] **Step 3: Implement the scene skeleton**
 
 Create `src/scenes/loadout.js`:
 
@@ -2105,12 +2105,12 @@ export const loadoutScene = {
 };
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: PASS (4 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/loadout.js tests/scenes/loadout.test.js
@@ -2127,7 +2127,7 @@ git commit -m "feat(loadout): scene skeleton (3-step wizard) (M3 Task 17)"
 
 The weapons step lets the player pick main and offhand from a weapons registry. Selection is keyboard-driven (arrow keys + Enter); for M3, the test uses a stub input that drives the choice.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/loadout.test.js`:
 
@@ -2156,12 +2156,12 @@ describe('loadout scene — weapons step (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: FAIL — `_stepState.weaponsList` undefined; `_commitWeapons` undefined
 
-- [ ] **Step 3: Implement the weapons step**
+- [x] **Step 3: Implement the weapons step**
 
 In `src/scenes/loadout.js`, replace the existing `enter` and add new methods:
 
@@ -2222,12 +2222,12 @@ In `src/scenes/loadout.js`, replace the existing `enter` and add new methods:
   },
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: PASS (existing 4 + 2 new = 6 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/loadout.js tests/scenes/loadout.test.js
@@ -2242,7 +2242,7 @@ git commit -m "feat(loadout): weapons step (M3 Task 18)"
 - Modify: `src/scenes/loadout.js`
 - Modify: `tests/scenes/loadout.test.js`
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/loadout.test.js`:
 
@@ -2267,12 +2267,12 @@ describe('loadout scene — abilities step (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: FAIL — `_stepState.mainAbilities` undefined
 
-- [ ] **Step 3: Implement the abilities step**
+- [x] **Step 3: Implement the abilities step**
 
 In `src/scenes/loadout.js`, extend the `enter` method to populate `mainAbilities` and add validation in `_commitAbilities`:
 
@@ -2303,12 +2303,12 @@ And update `_commitAbilities` to validate:
   },
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: PASS (6 + 2 new = 8 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/loadout.js tests/scenes/loadout.test.js
@@ -2323,7 +2323,7 @@ git commit -m "feat(loadout): abilities step (M3 Task 19)"
 - Modify: `src/scenes/loadout.js`
 - Modify: `tests/scenes/loadout.test.js`
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/loadout.test.js`:
 
@@ -2352,12 +2352,12 @@ describe('loadout scene — passives step (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: FAIL — error not thrown for unknown passive
 
-- [ ] **Step 3: Implement passive validation in `_commitPassives`**
+- [x] **Step 3: Implement passive validation in `_commitPassives`**
 
 ```js
   _commitPassives() {
@@ -2374,12 +2374,12 @@ Expected: FAIL — error not thrown for unknown passive
 
 And add `this._passives = ctx.passives || new Map();` in `enter`.
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/loadout.test.js`
 Expected: PASS (8 + 2 new = 10 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/loadout.js tests/scenes/loadout.test.js
@@ -2398,7 +2398,7 @@ git commit -m "feat(loadout): passives step (M3 Task 20)"
 
 The hub's `update()` checks for `L` and transitions to the `loadout` scene with the current player as ctx. Tests stub the input.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/hub.test.js`:
 
@@ -2421,12 +2421,12 @@ describe('hub opens loadout scene (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/hub.test.js`
 Expected: FAIL — `L` not in KEY_BINDINGS
 
-- [ ] **Step 3: Wire up the input binding and the hub check**
+- [x] **Step 3: Wire up the input binding and the hub check**
 
 In `src/engine/input.js`, add `loadout: ['KeyL']` to `KEY_BINDINGS`.
 
@@ -2449,12 +2449,12 @@ In `src/scenes/hub.js`, extend `update()`:
   },
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/hub.test.js`
 Expected: PASS (existing 6 + 1 new = 7 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/engine/input.js src/scenes/hub.js tests/scenes/hub.test.js
@@ -2471,7 +2471,7 @@ git commit -m "feat(hub): open loadout scene on L (M3 Task 21)"
 
 The levelup scene shows 3 passive choices (after the 1.0s flash). On Enter, the picked passive is added to `ownedPassives` and (if a null slot exists) placed in `loadout.passives`. The scene then transitions to the dungeon.
 
-- [ ] **Step 1: Update the failing test**
+- [x] **Step 1: Update the failing test**
 
 Append to `tests/scenes/levelup.test.js`:
 
@@ -2504,12 +2504,12 @@ describe('levelup scene — passive choice (M3)', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test, verify it fails**
+- [x] **Step 2: Run the test, verify it fails**
 
 Run: `npm test -- tests/scenes/levelup.test.js`
 Expected: FAIL — `levelupScene._choices` undefined; `passives` arg not handled
 
-- [ ] **Step 3: Extend `levelup.js` to support passive choices**
+- [x] **Step 3: Extend `levelup.js` to support passive choices**
 
 In `src/scenes/levelup.js`, modify the `enter` and `update` methods:
 
@@ -2577,12 +2577,12 @@ export const levelupScene = {
 };
 ```
 
-- [ ] **Step 4: Run the test, verify it passes**
+- [x] **Step 4: Run the test, verify it passes**
 
 Run: `npm test -- tests/scenes/levelup.test.js`
 Expected: PASS (existing 3 + 2 new = 5 tests)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/scenes/levelup.js tests/scenes/levelup.test.js
@@ -2600,7 +2600,7 @@ git commit -m "feat(levelup): 3-choice passive picker (M3 Task 22)"
 
 `main.js` registers the `loadout` scene in the StateMachine and threads `weapons`, `monsters`, `abilities`, **and `passives`** into both the hub→dungeon path and the loadout→hub path.
 
-- [ ] **Step 1: Update `src/main.js`**
+- [x] **Step 1: Update `src/main.js`**
 
 Replace the scene registration block and the dungeon ctx builder:
 
@@ -2654,12 +2654,12 @@ async function boot() {
 }
 ```
 
-- [ ] **Step 2: Run the build and tests**
+- [x] **Step 2: Run the build and tests**
 
 Run: `npm run build && npm test`
 Expected: build succeeds, all unit tests pass.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/main.js
@@ -2675,7 +2675,7 @@ git commit -m "feat(main): register loadout scene; thread passives registry (M3 
 **Files:**
 - Create: `tests/e2e/build.spec.js`
 
-- [ ] **Step 1: Write the E2E test**
+- [x] **Step 1: Write the E2E test**
 
 Create `tests/e2e/build.spec.js`:
 
@@ -2712,12 +2712,12 @@ test.describe('M3 build flow E2E', () => {
 });
 ```
 
-- [ ] **Step 2: Run the E2E test**
+- [x] **Step 2: Run the E2E test**
 
 Run: `npm run test:e2e -- tests/e2e/build.spec.js`
 Expected: PASS. If the loadout scene's `enter` doesn't log, add a `console.log('[scene] enter: loadout')` line in `loadout.js#enter`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add tests/e2e/build.spec.js src/scenes/loadout.js
