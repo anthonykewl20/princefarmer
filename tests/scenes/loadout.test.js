@@ -79,3 +79,26 @@ describe('loadout scene — abilities step (M3)', () => {
     expect(() => loadoutScene._commitAbilities()).toThrow(/same ability twice/);
   });
 });
+
+describe('loadout scene — passives step (M3)', () => {
+  beforeEach(() => { loadoutScene.exit(); });
+
+  it('commits the 6 passive slots on confirm', () => {
+    const player = { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] }, ownedPassives: ['might', 'vigor'] };
+    const passives = new Map([['might', { id: 'might', maxStacks: 5 }], ['vigor', { id: 'vigor', maxStacks: 5 }]]);
+    loadoutScene.enter({ player, passives });
+    loadoutScene._step = 'passives';
+    loadoutScene._stepState.passiveSlots = ['might', 'might', 'vigor', null, null, null];
+    loadoutScene._commitPassives();
+    expect(player.loadout.passives).toEqual(['might', 'might', 'vigor', null, null, null]);
+  });
+
+  it('rejects a passive id not in the registry', () => {
+    const player = { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } };
+    const passives = new Map([['might', { id: 'might', maxStacks: 5 }]]);
+    loadoutScene.enter({ player, passives });
+    loadoutScene._step = 'passives';
+    loadoutScene._stepState.passiveSlots = ['mythical', null, null, null, null, null];
+    expect(() => loadoutScene._commitPassives()).toThrow(/unknown passive/);
+  });
+});

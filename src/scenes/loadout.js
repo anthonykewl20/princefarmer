@@ -23,6 +23,7 @@ export const loadoutScene = {
     this._player = ctx.player || null;
     if (ctx.input) this._input = ctx.input; // tests can inject; main.js wires real input
     this._weapons = ctx.weapons || new Map();
+    this._passives = ctx.passives || new Map();
     this._step = 'weapons';
     this._stepState = {
       weaponsList: Array.from(this._weapons.keys()),
@@ -95,7 +96,13 @@ export const loadoutScene = {
 
   _commitPassives() {
     if (!this._player) return;
-    this._player.loadout.passives = this._stepState.passiveSlots.slice(0, 6);
+    const slots = this._stepState.passiveSlots.slice(0, 6);
+    for (const id of slots) {
+      if (id !== null && !this._passives?.has(id)) {
+        throw new Error(`unknown passive: ${id}`);
+      }
+    }
+    this._player.loadout.passives = slots;
   },
 
   render(ctx) {
