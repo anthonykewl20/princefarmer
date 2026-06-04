@@ -24,6 +24,8 @@ import { createMonster } from '../engine/monster.js';
 import { createXpGem } from '../engine/pickup.js';
 import { applyHit, resolveShape } from '../engine/combat.js';
 import { triggerDeath } from '../engine/death.js';
+import { resolveEvolutionTier1, applyLoadout } from '../engine/build.js';
+import { ELEMENTS } from '../engine/elements.js';
 
 // Seeded RNG factory — deterministic for tests; non-deterministic in prod.
 function makeRng(seed) {
@@ -38,7 +40,7 @@ export const dungeonScene = {
   name: 'dungeon',
 
   enter(ctx = {}) {
-    const { dungeonId, rooms, weapons, monsters, abilities, hubTransition } = ctx;
+    const { dungeonId, rooms, weapons, monsters, abilities, passives, hubTransition } = ctx;
     const dungeon = dungeons.get(dungeonId);
     if (!dungeon) {
       console.warn(`[dungeon] no dungeon with id "${dungeonId}"`);
@@ -56,7 +58,12 @@ export const dungeonScene = {
     const grid = createTileGrid(room.tiles);
 
     this._input = createInput(globalThis);
-    this._player = createPlayer(room.spawn.x, room.spawn.y, this._input);
+    // Reuse an existing player if one is present (e.g. when a caller
+    // mutates loadout state and re-enters to re-resolve). Otherwise
+    // create a fresh player at the room spawn.
+    if (!this._player) {
+      this._player = createPlayer(room.spawn.x, room.spawn.y, this._input);
+    }
     this._camera = createCamera(this._player, { width: room.width, height: room.height });
     this._grid = grid;
     this._room = room;
@@ -65,6 +72,7 @@ export const dungeonScene = {
 
     // M2: entity arrays + registries
     this._weapons = weapons || new Map();
+    this._passives = passives || new Map();
     this._monsters = [];
     this._gems = [];
     this._projectiles = [];
@@ -77,6 +85,9 @@ export const dungeonScene = {
       this._player.weapon.id = weaponId;
       this._player.weapon.template = weapon;
     }
+
+    // M3: resolve the player's loadout (tier-1 evolution + passive bonuses)
+    this._resolveLoadout();
 
     // Spawn monsters from room.monsterSpawns
     const monsterRegistry = monsters || new Map();
@@ -222,6 +233,38 @@ export const dungeonScene = {
       if (d <= bestDist) { best = m; bestDist = d; }
     }
     return best;
+  },
+
+  _resolveLoadout() {
+    const p = this._player;
+    if (!p || !p.loadout) return;
+    const weaponId = p.loadout.main?.weaponId;
+    if (!weaponId) return;
+    const baseWeapon = this._weapons.get(weaponId);
+    if (!baseWeapon) return;
+
+    // Tier-1 evolution (recipe-driven swap)
+    const evolved = resolveEvolutionTier1(baseWeapon, p.loadout, this._weapons, this._passives);
+    const active = evolved || baseWeapon;
+
+    p.weapon.id = active.id;
+    p.weapon.template = active;
+
+    // Initialize per-weapon evolution state
+    if (!p.evolutionState[weaponId]) {
+      const zero = Object.fromEntries(ELEMENTS.map((e) => [e.id, 0]));
+      p.evolutionState[weaponId] = {
+        tier: active.tier || 0,
+        kills: 0,
+        elementDamage: zero,
+      };
+    }
+
+    // Apply passive bonuses
+    const { bonuses, effective } = applyLoadout(p, p.loadout, this._passives);
+    p._loadoutBonuses = bonuses;
+    p._effectiveStats = effective;
+    p.attackPower = effective.attackPower;
   },
 
   _onMonsterKilled(monster) {

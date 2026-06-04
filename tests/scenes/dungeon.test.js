@@ -219,4 +219,96 @@ describe('dungeon scene', () => {
       expect(p.onGround).toBe(false);
     });
   });
+
+  describe('update — loadout resolution (M3)', () => {
+    it('resolves tier-1 evolution at enter when a recipe matches', () => {
+      const { dungeon, room } = setupDungeon();
+      const kampilan = {
+        id: 'kampilan', element: 'spirit',
+        autoAttack: { range: 1.2, shape: 'arc', arc: Math.PI / 2, tick: 0.6, damage: 20 },
+        abilities: ['lunging-strike', 'sweep', 'thrust', 'shield-bash'],
+        evolvesInto: { 'withPassive:might:count:3': 'tiger-claw' },
+      };
+      const tigerClaw = {
+        id: 'tiger-claw', tier: 2, parentId: 'kampilan',
+        autoAttack: { range: 1.4, shape: 'arc', arc: 2.0, tick: 0.5, damage: 35 },
+        abilities: ['tiger-roar', 'lunge-3'],
+      };
+      const passives = new Map([['might', { id: 'might', element: 'fire', effect: { stat: 'attackPower', op: 'add', value: 1 }, maxStacks: 5, tier: 1 }]]);
+      const player = {
+        loadout: {
+          main:    { weaponId: 'kampilan', abilitiesPicked: ['sweep', 'thrust'] },
+          offhand: { weaponId: null,       abilitiesPicked: [] },
+          passives: ['might', 'might', 'might', null, null, null],
+        },
+        ownedPassives: ['might'],
+        evolutionState: {},
+        attackPower: 1,
+      };
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', kampilan], ['tiger-claw', tigerClaw]]),
+        monsters: new Map(),
+        passives,
+        hubTransition: vi.fn(),
+      });
+      // Inject the player with the M3 loadout
+      Object.assign(dungeonScene._player, player);
+
+      // Re-enter so _resolveLoadout runs with the new player state
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', kampilan], ['tiger-claw', tigerClaw]]),
+        monsters: new Map(),
+        passives,
+        hubTransition: vi.fn(),
+      });
+      // Re-inject because enter() recreates the player
+      Object.assign(dungeonScene._player, player);
+
+      // After re-enter, the weapon should be evolved
+      expect(dungeonScene._player.weapon.template.id).toBe('tiger-claw');
+      expect(dungeonScene._player.evolutionState.kampilan).toBeTruthy();
+    });
+
+    it('does not evolve when the loadout does not match a recipe', () => {
+      const { dungeon, room } = setupDungeon();
+      const kampilan = {
+        id: 'kampilan', element: 'spirit',
+        autoAttack: { range: 1.2, shape: 'arc', arc: Math.PI / 2, tick: 0.6, damage: 20 },
+        abilities: ['lunging-strike', 'sweep', 'thrust', 'shield-bash'],
+        evolvesInto: { 'withPassive:might:count:3': 'tiger-claw' },
+      };
+      const passives = new Map([['might', { id: 'might', element: 'fire', effect: { stat: 'attackPower', op: 'add', value: 1 }, maxStacks: 5, tier: 1 }]]);
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', kampilan]]),
+        monsters: new Map(),
+        passives,
+        hubTransition: vi.fn(),
+      });
+      Object.assign(dungeonScene._player, {
+        loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: ['might', null, null, null, null, null] },
+        ownedPassives: ['might'],
+        evolutionState: {},
+      });
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', kampilan]]),
+        monsters: new Map(),
+        passives,
+        hubTransition: vi.fn(),
+      });
+      Object.assign(dungeonScene._player, {
+        loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: ['might', null, null, null, null, null] },
+        ownedPassives: ['might'],
+        evolutionState: {},
+      });
+      expect(dungeonScene._player.weapon.template.id).toBe('kampilan');
+    });
+  });
 });
