@@ -31,9 +31,11 @@ test.describe('PrinceFarmer smoke test', () => {
 
     const roundTrip = await page.evaluate(async () => {
       const save = window.__pf.save;
-      await save.write({ version: 1, player: { level: 7, classId: 'lakan-alon' } });
+      // Write a v2 save. SaveManager.load() runs the v1→v2 migration, so
+      // a v1 payload would be read back as v2 with M2 fields populated.
+      await save.write({ version: 2, player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' } });
       return await save.load();
     });
-    expect(roundTrip).toEqual({ version: 1, player: { level: 7, classId: 'lakan-alon' } });
+    expect(roundTrip).toEqual({ version: 2, player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' } });
   });
 });

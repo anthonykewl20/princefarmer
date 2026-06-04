@@ -183,8 +183,11 @@ export const dungeonScene = {
     // M2: tick projectiles (placeholder; no spawns in M2)
     for (const proj of this._projectiles) proj.update(dt, world);
 
-    // M2: clean up dead entities
-    this._monsters = this._monsters.filter((m) => m.alive);
+    // M2: clean up dead entities. We filter on `hp > 0` for monsters
+    // (in addition to `alive`) so any path that zeroes hp without
+    // flipping the flag — e.g. a future damage source that mutates hp
+    // directly — still gets the monster removed.
+    this._monsters = this._monsters.filter((m) => m.alive && m.hp > 0);
     this._gems = this._gems.filter((g) => g.alive);
 
     // M2: resolve death
@@ -228,6 +231,9 @@ export const dungeonScene = {
         this._gems.push(createXpGem(monster.x, monster.y, drop.amount));
       }
     }
+    // Mark the entity dead so the per-frame cleanup filter drops it.
+    // The auto-attack zeroes hp but the scene owns the entity lifecycle.
+    monster.alive = false;
   },
 
   render(ctx) {
