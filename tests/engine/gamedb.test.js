@@ -64,3 +64,13 @@ describe('loadAbilities', () => {
     expect(abilities.get('lunging-strike')).toBeTruthy();
   });
 });
+
+import { loadPassives } from '../../src/engine/gamedb.js';
+
+describe('loadPassives (M3)', () => {
+  it('loads passives.json and indexes by id', () => {
+    const passives = loadPassives();
+    expect(passives.get('might')).toBeTruthy();
+    expect(passives.size).toBe(6);
+  });
+});
