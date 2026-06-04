@@ -113,3 +113,48 @@ export function resolveEvolutionTier1(weapon, loadout, weaponRegistry, passiveRe
   }
   return null;
 }
+
+/**
+ * Find the dominant element from a damage map. Ties broken by the
+ * element's order in `ELEMENTS`. Returns null if no damage dealt.
+ */
+export function dominantElement(elementDamage) {
+  let best = null;
+  let bestValue = 0;
+  for (const [el, dmg] of Object.entries(elementDamage || {})) {
+    if (dmg > bestValue) { best = el; bestValue = dmg; }
+  }
+  return bestValue > 0 ? best : null;
+}
+
+/**
+ * Resolve a tier-2 evolution. Requires:
+ *  - current form's tier === 1
+ *  - kills >= threshold parsed from evolutionTrigger "kills:N"
+ *  - dominant element of elementDamage matches a tier2Paths entry
+ *    AND that element's share >= elementDamageThreshold
+ *
+ * @returns {object|null} the tier-2 weapon template, or null
+ */
+export function resolveEvolutionTier2(currentForm, state, weaponRegistry) {
+  if (state?.tier !== 1) return null;
+  const match = (currentForm.evolutionTrigger || '').match(/^kills:(\d+)$/);
+  if (!match) return null;
+  const threshold = Number(match[1]);
+  if ((state.kills || 0) < threshold) return null;
+
+  const total = Object.values(state.elementDamage || {}).reduce((a, b) => a + b, 0);
+  if (total === 0) return null;
+  const dom = dominantElement(state.elementDamage);
+  if (!dom) return null;
+
+  for (const path of (currentForm.tier2Paths || [])) {
+    if (path.dominantElement !== dom) continue;
+    const share = (state.elementDamage[dom] || 0) / total;
+    if (share >= path.elementDamageThreshold) {
+      const next = weaponRegistry.get(path.id);
+      if (next) return next;
+    }
+  }
+  return null;
+}

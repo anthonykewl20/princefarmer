@@ -3,6 +3,7 @@ import {
   canPickAbility, validateAbilityPick, countPassiveInLoadout,
   computeElementMultiplier, computeComboBonus, distinctElementsInLoadout,
   resolveEvolutionTier1,
+  resolveEvolutionTier2, dominantElement,
 } from '../../src/engine/build.js';
 
 const KAMPILAN = {
@@ -172,5 +173,59 @@ describe('resolveEvolutionTier1', () => {
     const bad = { id: 'kampilan', tier: 0, evolvesInto: { 'withPassive:might:count:3': 'ghost' } };
     const loadout = { passives: ['might', 'might', 'might', null, null, null] };
     expect(resolveEvolutionTier1(bad, loadout, WEAPONS, PASSIVES)).toBeNull();
+  });
+});
+
+const TIGER_CLAW = {
+  id: 'tiger-claw', tier: 2, parentId: 'kampilan',
+  evolutionTrigger: 'kills:200',
+  tier2Paths: [
+    { id: 'phoenix-edge', dominantElement: 'fire',      elementDamageThreshold: 0.4 },
+    { id: 'stormcaller',  dominantElement: 'lightning', elementDamageThreshold: 0.4 },
+  ],
+};
+const PHOENIX_EDGE = { id: 'phoenix-edge', tier: 3, parentId: 'tiger-claw' };
+const STORMCALLER  = { id: 'stormcaller',  tier: 3, parentId: 'tiger-claw' };
+const WEAPONS_T2 = new Map([
+  ['tiger-claw', TIGER_CLAW],
+  ['phoenix-edge', PHOENIX_EDGE],
+  ['stormcaller', STORMCALLER],
+]);
+
+describe('dominantElement', () => {
+  it('returns the element with the highest damage share', () => {
+    const dmg = { fire: 50, lightning: 30, water: 20 };
+    expect(dominantElement(dmg)).toBe('fire');
+  });
+  it('returns null for empty or zero damage', () => {
+    expect(dominantElement({})).toBeNull();
+    expect(dominantElement({ fire: 0, water: 0 })).toBeNull();
+  });
+});
+
+describe('resolveEvolutionTier2', () => {
+  it('returns null if kills < threshold', () => {
+    const state = { tier: 1, kills: 100, elementDamage: { fire: 100, lightning: 0, water: 0 } };
+    expect(resolveEvolutionTier2(TIGER_CLAW, state, WEAPONS_T2)).toBeNull();
+  });
+  it('returns null if current tier is not 1', () => {
+    const state = { tier: 2, kills: 200, elementDamage: { fire: 100, lightning: 0, water: 0 } };
+    expect(resolveEvolutionTier2(TIGER_CLAW, state, WEAPONS_T2)).toBeNull();
+  });
+  it('picks the matching tier-2 path by dominant element', () => {
+    const state = { tier: 1, kills: 200, elementDamage: { fire: 80, lightning: 20 } };
+    const result = resolveEvolutionTier2(TIGER_CLAW, state, WEAPONS_T2);
+    expect(result.id).toBe('phoenix-edge');
+  });
+  it('picks lightning path when lightning meets threshold', () => {
+    const state = { tier: 1, kills: 200, elementDamage: { fire: 30, lightning: 70, water: 0 } };
+    // lightning meets threshold (0.7 > 0.4) → stormcaller
+    const result = resolveEvolutionTier2(TIGER_CLAW, state, WEAPONS_T2);
+    expect(result.id).toBe('stormcaller');
+  });
+  it('returns null if dominant element matches no path', () => {
+    const state = { tier: 1, kills: 200, elementDamage: { water: 100 } };
+    // dominant is water; no path has water
+    expect(resolveEvolutionTier2(TIGER_CLAW, state, WEAPONS_T2)).toBeNull();
   });
 });
