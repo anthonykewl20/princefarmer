@@ -12,6 +12,7 @@
  */
 
 import { validateAbilityPick } from '../engine/build.js';
+import { createInput } from '../engine/input.js';
 
 let sm = null;
 export function setLoadoutStateMachine(s) { sm = s; }
@@ -20,13 +21,21 @@ export const loadoutScene = {
   name: 'loadout',
 
   enter(ctx = {}) {
+    console.log('[scene] enter: loadout');
     this._player = ctx.player || null;
-    if (ctx.input) this._input = ctx.input; // tests can inject; main.js wires real input
+    // Fall back to createInput(globalThis) only when no input was supplied
+    // via ctx and the scene's _input wasn't pre-set (e.g. by a unit test).
+    this._input = ctx.input || this._input || createInput(globalThis);
     this._weapons = ctx.weapons || new Map();
     this._passives = ctx.passives || new Map();
     this._step = 'weapons';
+    // GameDB doesn't have .keys(); fall back to idsWhere() when a registry
+    // instance is passed in (e.g. from __pf.weapons in the E2E test).
+    const weaponIds = typeof this._weapons.keys === 'function'
+      ? Array.from(this._weapons.keys())
+      : this._weapons.idsWhere(() => true);
     this._stepState = {
-      weaponsList: Array.from(this._weapons.keys()),
+      weaponsList: weaponIds,
       mainPick: this._player?.loadout?.main?.weaponId || null,
       offhandPick: this._player?.loadout?.offhand?.weaponId || null,
       mainAbilities: this._weapons.get(this._player?.loadout?.main?.weaponId)?.abilities || [],
