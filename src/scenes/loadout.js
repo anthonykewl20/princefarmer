@@ -28,9 +28,9 @@ export const loadoutScene = {
       weaponsList: Array.from(this._weapons.keys()),
       mainPick: this._player?.loadout?.main?.weaponId || null,
       offhandPick: this._player?.loadout?.offhand?.weaponId || null,
-      // abilities step
+      mainAbilities: this._weapons.get(this._player?.loadout?.main?.weaponId)?.abilities || [],
+      offhandAbilities: this._weapons.get(this._player?.loadout?.offhand?.weaponId)?.abilities || [],
       abilitiesPicks: this._player?.loadout?.main?.abilitiesPicked?.slice() || [],
-      // passives step
       passiveSlots: this._player?.loadout?.passives?.slice() || [null,null,null,null,null,null],
     };
   },
@@ -84,7 +84,13 @@ export const loadoutScene = {
 
   _commitAbilities() {
     if (!this._player) return;
-    this._player.loadout.main.abilitiesPicked = this._stepState.abilitiesPicks.slice(0, 2);
+    const mainWeapon = this._weapons.get(this._player.loadout.main.weaponId);
+    if (mainWeapon) {
+      const picks = this._stepState.abilitiesPicks.slice(0, 2);
+      const result = validateAbilityPick(mainWeapon, picks);
+      if (!result.ok) throw new Error(result.error);
+      this._player.loadout.main.abilitiesPicked = picks;
+    }
   },
 
   _commitPassives() {

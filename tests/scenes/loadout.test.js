@@ -60,3 +60,22 @@ describe('loadout scene — weapons step (M3)', () => {
     expect(player.loadout.offhand.weaponId).toBe('baladaw');
   });
 });
+
+describe('loadout scene — abilities step (M3)', () => {
+  beforeEach(() => { loadoutScene.exit(); });
+
+  it('lists the 4 abilities of the main weapon', () => {
+    const weapons = new Map([['kampilan', { id: 'kampilan', abilities: ['a', 'b', 'c', 'd'] }]]);
+    loadoutScene.enter({ player: { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } }, weapons });
+    loadoutScene._step = 'abilities';
+    expect(loadoutScene._stepState.mainAbilities).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('rejects a pick that fails validateAbilityPick', () => {
+    const weapons = new Map([['kampilan', { id: 'kampilan', abilities: ['a', 'b', 'c', 'd'] }]]);
+    loadoutScene.enter({ player: { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } }, weapons });
+    loadoutScene._step = 'abilities';
+    loadoutScene._stepState.abilitiesPicks = ['a', 'a']; // duplicate
+    expect(() => loadoutScene._commitAbilities()).toThrow(/same ability twice/);
+  });
+});
