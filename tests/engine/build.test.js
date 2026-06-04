@@ -59,12 +59,12 @@ describe('countPassiveInLoadout', () => {
   });
 });
 
-const MIGHT = { id: 'might', element: 'fire' };
-const HASTE = { id: 'haste', element: 'air' };
-const VIGOR = { id: 'vigor', element: 'water' };
-const STONEHEART = { id: 'stoneheart', element: 'earth' };
-const STORMCALL = { id: 'stormcall', element: 'lightning' };
-const SOULREND = { id: 'soulrend', element: 'spirit' };
+const MIGHT = { id: 'might', element: 'fire', effect: { stat: 'attackPower', op: 'add', value: 1 } };
+const HASTE = { id: 'haste', element: 'air', effect: { stat: 'speed', op: 'mul', value: 0.05 } };
+const VIGOR = { id: 'vigor', element: 'water', effect: { stat: 'maxHp', op: 'add', value: 10 } };
+const STONEHEART = { id: 'stoneheart', element: 'earth', effect: { stat: 'maxHp', op: 'mul', value: 0.05 } };
+const STORMCALL = { id: 'stormcall', element: 'lightning', effect: { stat: 'critChance', op: 'add', value: 0.02 } };
+const SOULREND = { id: 'soulrend', element: 'spirit', effect: { stat: 'lifesteal', op: 'add', value: 0.03 } };
 const PASSIVES = new Map([
   ['might', MIGHT], ['haste', HASTE], ['vigor', VIGOR],
   ['stoneheart', STONEHEART], ['stormcall', STORMCALL], ['soulrend', SOULREND],
@@ -227,5 +227,37 @@ describe('resolveEvolutionTier2', () => {
     const state = { tier: 1, kills: 200, elementDamage: { water: 100 } };
     // dominant is water; no path has water
     expect(resolveEvolutionTier2(TIGER_CLAW, state, WEAPONS_T2)).toBeNull();
+  });
+});
+
+import { applyLoadout } from '../../src/engine/build.js';
+
+describe('applyLoadout', () => {
+  it('returns base stats when loadout is empty', () => {
+    const player = { attackPower: 1, maxHp: 100, speed: 1, critChance: 0.1, lifesteal: 0 };
+    const result = applyLoadout(player, { passives: [null, null, null, null, null, null] }, PASSIVES);
+    expect(result.bonuses).toEqual({ attackPower: 0, maxHp: 0, speed: 0, critChance: 0, lifesteal: 0 });
+  });
+  it('applies add effects (might × 3 → +3 attackPower)', () => {
+    const player = { attackPower: 1 };
+    const result = applyLoadout(player, { passives: ['might', 'might', 'might', null, null, null] }, PASSIVES);
+    expect(result.bonuses.attackPower).toBe(3);
+  });
+  it('applies mul effects multiplicatively across slots (haste × 2 → +10% speed)', () => {
+    const player = { speed: 1 };
+    const result = applyLoadout(player, { passives: ['haste', 'haste', null, null, null, null] }, PASSIVES);
+    // 0.05 per stack, applied to base speed 1.0 → final 1.10
+    expect(result.bonuses.speed).toBeCloseTo(0.10, 5);
+  });
+  it('sums mul and add effects in one bonus bag', () => {
+    const player = { attackPower: 1, maxHp: 100 };
+    const result = applyLoadout(player, { passives: ['might', 'vigor', null, null, null, null] }, PASSIVES);
+    expect(result.bonuses.attackPower).toBe(1);
+    expect(result.bonuses.maxHp).toBe(10);
+  });
+  it('ignores unknown passive ids gracefully', () => {
+    const player = { attackPower: 1 };
+    const result = applyLoadout(player, { passives: ['mythical', null, null, null, null, null] }, PASSIVES);
+    expect(result.bonuses.attackPower).toBe(0);
   });
 });

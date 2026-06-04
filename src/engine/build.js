@@ -158,3 +158,42 @@ export function resolveEvolutionTier2(currentForm, state, weaponRegistry) {
   }
   return null;
 }
+
+const KNOWN_STATS = ['attackPower', 'maxHp', 'speed', 'critChance', 'lifesteal'];
+
+/**
+ * Apply the loadout's passive effects to compute a bonus bag.
+ * - `add` effects sum the `value` × (number of slots containing the passive).
+ * - `mul` effects apply as percentage: 1 + value × slots.
+ *
+ * The dungeon reads `result.bonuses` and applies them to combat math
+ * (e.g. effective attackPower = base + bonuses.attackPower).
+ *
+ * @returns {{bonuses: object, effective: object}} — bonuses are deltas;
+ *   effective is the resolved stat after applying bonuses to `player`.
+ */
+export function applyLoadout(player, loadout, passiveRegistry) {
+  const bonuses = Object.fromEntries(KNOWN_STATS.map((s) => [s, 0]));
+  const slots = Array.isArray(loadout?.passives) ? loadout.passives : [];
+  for (const pid of slots) {
+    if (!pid) continue;
+    const p = passiveRegistry?.get(pid);
+    if (!p) continue;
+    const stat = p.effect?.stat;
+    if (!KNOWN_STATS.includes(stat)) continue;
+    if (p.effect.op === 'add') {
+      bonuses[stat] += p.effect.value;
+    } else if (p.effect.op === 'mul') {
+      // mul applies as 1 + (value × slotCount) — we report the delta only
+      bonuses[stat] += p.effect.value;
+    }
+  }
+  // Compute the effective stats (base + bonus for add, base × (1+sum mul) for mul).
+  // M3 keeps a single bonus bag; the dungeon can interpret `mul` bonuses
+  // as `1 + sum` if it needs a multiplier. For now, return the bag.
+  const effective = {};
+  for (const stat of KNOWN_STATS) {
+    effective[stat] = (player?.[stat] ?? 0) + bonuses[stat];
+  }
+  return { bonuses, effective };
+}
