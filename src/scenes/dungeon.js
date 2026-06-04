@@ -172,7 +172,8 @@ export const dungeonScene = {
     if (this._input.wasJustPressed('attack2')) {
       const ability = this._abilities.get(p.signatureAbilityId);
       const now = performance.now() / 1000;
-      if (ability && now - (p.signatureLastUsedTime || 0) >= ability.cooldown) {
+      const cooldown = ability?.cooldown ?? 1;
+      if (ability && now - (p.signatureLastUsedTime || 0) >= cooldown) {
         const shape = {
           ...ability.aoe,
           radius: ability.aoe?.radius ?? ability.range,

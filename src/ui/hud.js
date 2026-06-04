@@ -10,6 +10,15 @@ import { xpForLevel } from '../engine/xpsystem.js';
 const HUD_HEIGHT = 54;
 const HUD_PADDING = 12;
 
+function formatClassLabel(classId) {
+  if (!classId || typeof classId !== 'string') return 'None';
+  return classId
+    .split('-')
+    .filter(Boolean)
+    .map((segment) => segment[0]?.toUpperCase() + segment.slice(1))
+    .join(' ');
+}
+
 /**
  * Draw the HP bar at the given screen-space position.
  * @param {CanvasRenderingContext2D} ctx
@@ -55,10 +64,12 @@ export function drawCombatHud(ctx, player, room, weapon) {
   ctx.font = '14px monospace';
   ctx.textAlign = 'right';
   ctx.fillText(`Lv ${player.level}`, w - HUD_PADDING, HUD_PADDING + 14);
+  ctx.fillStyle = player.classAccent ?? '#f4c089';
+  ctx.fillText(`Class: ${formatClassLabel(player.className || player.classId)}`, w - HUD_PADDING, HUD_PADDING + 44);
   if (room?.id) {
     ctx.fillStyle = '#888';
     ctx.font = '12px monospace';
-    ctx.fillText(room.id, w - HUD_PADDING, HUD_PADDING + 30);
+    ctx.fillText(room.id, w - HUD_PADDING, HUD_PADDING + 62);
   }
 
   // Bottom strip background

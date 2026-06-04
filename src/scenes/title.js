@@ -11,10 +11,12 @@ import { hydratePlayerFromSave } from '../engine/player.js';
 let sm = null;
 let save = null;
 let classes = null;
+let abilities = null;
 export function setTitleStateMachine(s) { sm = s; }
-export function configureTitleScene({ saveManager, classesRegistry }) {
+export function configureTitleScene({ saveManager, classesRegistry, abilitiesRegistry }) {
   save = saveManager;
   classes = classesRegistry;
+  abilities = abilitiesRegistry || null;
 }
 
 export const titleScene = {
@@ -54,7 +56,7 @@ export const titleScene = {
     }
 
     if (newRunPressed || (!this._saveData && continuePressed)) {
-      if (sm) sm.transition('class-select', { classes, save });
+      if (sm) sm.transition('class-select', { classes, abilities, save });
     }
   },
   render(ctx) {

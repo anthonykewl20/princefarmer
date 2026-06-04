@@ -70,7 +70,7 @@ async function boot() {
   });
 
   setTitleStateMachine(sm);
-  configureTitleScene({ saveManager: save, classesRegistry: classes });
+  configureTitleScene({ saveManager: save, classesRegistry: classes, abilities });
 
   setHubStateMachine(sm);
   setLoadoutStateMachine(sm);

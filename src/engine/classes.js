@@ -1,5 +1,6 @@
 export const DEFAULT_CLASS_ID = 'lakan-alon';
 export const DEFAULT_SIGNATURE_ABILITY_ID = 'tidal-pulse';
+const BASE_MAX_HP = 100;
 
 export function getDefaultSignatureAbilityId(classId) {
   switch (classId) {
@@ -43,10 +44,21 @@ export function deriveOwnedPassives(loadout) {
 
 export function applyClassTemplate(player, classDef) {
   const loadout = cloneLoadout(classDef?.starterLoadout);
+  const bonuses = classDef?.bonuses || {};
+
   player.classId = classDef?.id ?? DEFAULT_CLASS_ID;
   player.signatureAbilityId = classDef?.signatureAbilityId ?? getDefaultSignatureAbilityId(player.classId);
+  player.className = classDef?.name ?? player.classId;
+  player.classAccent = classDef?.accent ?? player.classAccent;
+  player.classBlurb = classDef?.blurb ?? classDef?.description ?? null;
   player.loadout = loadout;
   player.ownedPassives = deriveOwnedPassives(loadout);
   player.evolutionState = player.evolutionState ?? {};
+
+  const maxHpBonus = bonuses.maxHp ?? 0;
+  player.maxHp = BASE_MAX_HP + maxHpBonus;
+  player.hp = player.maxHp;
+  player.attackPower = (player.attackPower ?? 1) + (bonuses.attackPower ?? 0);
+
   return player;
 }

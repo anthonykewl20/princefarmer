@@ -25,6 +25,7 @@ export const classSelectScene = {
     this._input = createInput(globalThis);
     this._save = ctx.save ?? null;
     this._classes = getClassList(ctx.classes);
+    this._abilities = ctx.abilities || new Map();
     this._selectedIndex = 0;
   },
 
@@ -32,7 +33,40 @@ export const classSelectScene = {
     this._input = null;
     this._save = null;
     this._classes = [];
+    this._abilities = new Map();
     this._selectedIndex = 0;
+  },
+
+  _getAbility(abilityId) {
+    return this._abilities.get(abilityId) || null;
+  },
+
+  _drawTextBlock(ctx, text, x, y, maxWidth, lineHeight = 22) {
+    const words = text.split(' ');
+    let line = '';
+    let lineY = y;
+    const prevAlign = ctx.textAlign;
+    ctx.textAlign = 'left';
+
+    for (const word of words) {
+      const candidate = line ? `${line} ${word}` : word;
+      const width = ctx.measureText(candidate).width;
+      if (width > maxWidth && line) {
+        ctx.fillText(line, x, lineY);
+        line = word;
+        lineY += lineHeight;
+      } else {
+        line = candidate;
+      }
+    }
+    if (line) {
+      ctx.fillText(line, x, lineY);
+      lineY += lineHeight;
+    }
+
+    ctx.textAlign = prevAlign;
+
+    return lineY;
   },
 
   update() {
@@ -47,6 +81,14 @@ export const classSelectScene = {
       return;
     }
     if (this._input.wasJustPressed('right')) {
+      this._selectedIndex = (this._selectedIndex + 1) % this._classes.length;
+      return;
+    }
+    if (this._input.wasJustPressed('up')) {
+      this._selectedIndex = (this._selectedIndex + this._classes.length - 1) % this._classes.length;
+      return;
+    }
+    if (this._input.wasJustPressed('down')) {
       this._selectedIndex = (this._selectedIndex + 1) % this._classes.length;
       return;
     }
@@ -65,7 +107,8 @@ export const classSelectScene = {
     const selected = this._classes[this._selectedIndex] ?? null;
     ctx.fillStyle = '#10161b';
     ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#f4c089';
+    const accent = selected.accent ?? '#f4c089';
+    ctx.fillStyle = accent;
     ctx.font = 'bold 48px monospace';
     ctx.textAlign = 'center';
     ctx.fillText('Choose Class', w / 2, 90);
@@ -78,10 +121,17 @@ export const classSelectScene = {
 
     ctx.fillStyle = '#b8c2cc';
     ctx.font = '20px monospace';
-    ctx.fillText(selected.description, w / 2, 220);
-    ctx.fillText(`Main: ${selected.starterLoadout.main.weaponId}`, w / 2, 300);
-    ctx.fillText(`Offhand: ${selected.starterLoadout.offhand.weaponId}`, w / 2, 335);
-    ctx.fillText(`Signature: ${selected.signatureAbilityId}`, w / 2, 370);
+    const ability = this._getAbility(selected.signatureAbilityId);
+    const signatureName = ability?.name ?? selected.signatureAbilityId;
+
+    const lastY = this._drawTextBlock(ctx, selected.blurb || selected.description, w / 2 - 320, 220, 640, 22);
+    ctx.textAlign = 'center';
+    ctx.fillText(`Main: ${selected.starterLoadout.main.weaponId}`, w / 2, Math.max(300, lastY + 20));
+    ctx.fillText(`Offhand: ${selected.starterLoadout.offhand.weaponId}`, w / 2, Math.max(330, lastY + 44));
+    ctx.fillText(`Signature: ${signatureName} (${selected.signatureAbilityId})`, w / 2, Math.max(360, lastY + 68));
+    if (ability?.cooldown != null) {
+      ctx.fillText(`Cooldown: ${ability.cooldown.toFixed(1)}s`, w / 2, Math.max(390, lastY + 92));
+    }
     ctx.fillText(`Class ${this._selectedIndex + 1}/${this._classes.length}`, w / 2, h - 90);
     ctx.fillText('Arrows to change, Enter to confirm', w / 2, h - 50);
   },

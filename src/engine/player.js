@@ -165,17 +165,23 @@ export function heal(p, amount) {
 }
 
 export function serializePlayerToSave(player) {
+  const playerPayload = {
+    classId: player.classId ?? DEFAULT_CLASS_ID,
+    signatureAbilityId: player.signatureAbilityId ?? DEFAULT_SIGNATURE_ABILITY_ID,
+    hp: player.hp,
+    maxHp: player.maxHp,
+    level: player.level,
+    xp: player.xp,
+    attackPower: player.attackPower,
+  };
+
+  if (player.className) playerPayload.className = player.className;
+  if (player.classAccent) playerPayload.classAccent = player.classAccent;
+  if (player.classBlurb) playerPayload.classBlurb = player.classBlurb;
+
   return {
     version: CURRENT_SAVE_VERSION,
-    player: {
-      classId: player.classId ?? DEFAULT_CLASS_ID,
-      signatureAbilityId: player.signatureAbilityId ?? DEFAULT_SIGNATURE_ABILITY_ID,
-      hp: player.hp,
-      maxHp: player.maxHp,
-      level: player.level,
-      xp: player.xp,
-      attackPower: player.attackPower,
-    },
+    player: playerPayload,
     weapons: [
       {
         slot: 'main',
@@ -208,6 +214,9 @@ export function hydratePlayerFromSave(saveData, input = null) {
   player.attackPower = saveData?.player?.attackPower ?? player.attackPower;
   player.classId = saveData?.player?.classId ?? DEFAULT_CLASS_ID;
   player.signatureAbilityId = saveData?.player?.signatureAbilityId ?? DEFAULT_SIGNATURE_ABILITY_ID;
+  player.className = saveData?.player?.className ?? player.classId;
+  player.classAccent = saveData?.player?.classAccent ?? player.classAccent;
+  player.classBlurb = saveData?.player?.classBlurb ?? player.classBlurb;
   player.loadout = cloneLoadout({
     main: {
       weaponId: main?.id ?? player.loadout.main.weaponId,
