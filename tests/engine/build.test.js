@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   canPickAbility, validateAbilityPick, countPassiveInLoadout,
+  computeElementMultiplier, computeComboBonus, distinctElementsInLoadout,
 } from '../../src/engine/build.js';
 
 const KAMPILAN = {
@@ -53,5 +54,80 @@ describe('countPassiveInLoadout', () => {
   });
   it('handles empty loadout', () => {
     expect(countPassiveInLoadout({ passives: [] }, 'might')).toBe(0);
+  });
+});
+
+const MIGHT = { id: 'might', element: 'fire' };
+const HASTE = { id: 'haste', element: 'air' };
+const VIGOR = { id: 'vigor', element: 'water' };
+const STONEHEART = { id: 'stoneheart', element: 'earth' };
+const STORMCALL = { id: 'stormcall', element: 'lightning' };
+const SOULREND = { id: 'soulrend', element: 'spirit' };
+const PASSIVES = new Map([
+  ['might', MIGHT], ['haste', HASTE], ['vigor', VIGOR],
+  ['stoneheart', STONEHEART], ['stormcall', STORMCALL], ['soulrend', SOULREND],
+]);
+
+describe('distinctElementsInLoadout', () => {
+  it('collects elements from weapons and passives', () => {
+    const loadout = {
+      main:    { element: 'spirit' },
+      offhand: { element: 'fire' },
+      passives: ['might', null, null, null, null, null],
+    };
+    expect(distinctElementsInLoadout(loadout, PASSIVES).size).toBe(2);
+  });
+  it('returns empty set for null loadout', () => {
+    expect(distinctElementsInLoadout(null).size).toBe(0);
+  });
+});
+
+describe('computeElementMultiplier', () => {
+  it('returns 1.0 with no matching passives', () => {
+    const loadout = { passives: [null, null, null, null, null, null] };
+    const result = computeElementMultiplier(loadout, { element: 'fire' }, PASSIVES);
+    expect(result.multiplier).toBe(1);
+  });
+  it('returns 1.15 with one matching passive slot', () => {
+    const loadout = { passives: ['might', null, null, null, null, null] };
+    const result = computeElementMultiplier(loadout, { element: 'fire' }, PASSIVES);
+    expect(result.multiplier).toBeCloseTo(1.15, 5);
+  });
+  it('returns 1.45 with three matching passive slots', () => {
+    const loadout = { passives: ['might', 'might', 'might', null, null, null] };
+    const result = computeElementMultiplier(loadout, { element: 'fire' }, PASSIVES);
+    expect(result.multiplier).toBeCloseTo(1.45, 5);
+  });
+  it('ignores passives of other elements', () => {
+    const loadout = { passives: ['haste', 'haste', null, null, null, null] };
+    const result = computeElementMultiplier(loadout, { element: 'fire' }, PASSIVES);
+    expect(result.multiplier).toBe(1);
+  });
+});
+
+describe('computeComboBonus', () => {
+  it('returns 1.00 for fewer than 3 distinct elements', () => {
+    const loadout = {
+      main: { element: 'fire' },
+      offhand: { element: 'fire' },
+      passives: ['might', null, null, null, null, null],
+    };
+    expect(computeComboBonus(loadout, PASSIVES)).toBe(1);
+  });
+  it('returns 1.10 for 3-4 distinct elements', () => {
+    const loadout = {
+      main:    { element: 'fire' },
+      offhand: { element: 'water' },
+      passives: ['might', 'haste', null, null, null, null],
+    };
+    expect(computeComboBonus(loadout, PASSIVES)).toBe(1.10);
+  });
+  it('returns 1.25 for 5+ distinct elements', () => {
+    const loadout = {
+      main:    { element: 'fire' },
+      offhand: { element: 'water' },
+      passives: ['might', 'haste', 'stoneheart', 'stormcall', null, null],
+    };
+    expect(computeComboBonus(loadout, PASSIVES)).toBe(1.25);
   });
 });
