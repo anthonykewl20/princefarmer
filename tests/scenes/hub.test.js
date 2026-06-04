@@ -94,3 +94,20 @@ describe('hub scene', () => {
     });
   });
 });
+
+describe('hub opens loadout scene (M3)', () => {
+  beforeEach(() => {
+    hubScene.exit();
+    hubScene.enter();
+    hubScene._input = { isPressed: () => false, wasJustPressed: () => false, endFrame: () => {} };
+  });
+
+  it('transitions to loadout when L is pressed', () => {
+    const sm = { transition: vi.fn() };
+    setHubStateMachine(sm);
+    hubScene._player = { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } };
+    hubScene._input = { ...hubScene._input, wasJustPressed: (a) => a === 'loadout' };
+    hubScene.update(0.016);
+    expect(sm.transition).toHaveBeenCalledWith('loadout', expect.objectContaining({ player: hubScene._player }));
+  });
+});

@@ -20,6 +20,7 @@ export const KEY_BINDINGS = {
   escape:  ['Escape'],
   interact: ['KeyE', 'Enter'],
   attack2: ['KeyQ', 'ShiftLeft'],
+  loadout: ['KeyL'],
 };
 
 /**
