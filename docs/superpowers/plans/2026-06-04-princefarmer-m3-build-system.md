@@ -2760,6 +2760,20 @@ No inconsistencies found.
 
 ---
 
+## Asset Generation Theme (deferred — applies to M2.1 / asset work)
+
+When generating images (via PixelLab MCP or any other generator) for this project's art, the visual style is:
+
+- **Theme:** high-quality pixel art
+- **Format:** normal RGBA spritesheets
+- **Staging:** modern lighting tricks (rim light, ambient occlusion, color ramps) to give sprites a polished, modern pixel-art look without breaking the pixel grid
+
+This applies to ALL sprite generation in this project — heroes, monsters, weapons, effects, items, UI elements. Bake this into every prompt and every generation call so the art stays visually consistent across the game.
+
+Reference: the existing `tools/asset-gen/style-guide.json` and `tools/asset-gen/prompts/*.js` are the canonical sources; their `basePrompt` should be extended to include "high-quality pixel art, normal RGBA spritesheet, modern lighting tricks" as the foundational style. Any new prompts (M3 tier-2 weapon forms, M4+ classes, etc.) must inherit this style.
+
+---
+
 ## Execution Handoff
 
 Plan complete and saved to `docs/superpowers/plans/2026-06-04-princefarmer-m3-build-system.md` (24 tasks).
