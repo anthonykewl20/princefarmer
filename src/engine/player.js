@@ -50,6 +50,14 @@ export function createPlayer(x, y, input) {
       lastAttackTime: 0,
       lastAbilityTime: 0,
     },
+    // M3 additions
+    loadout: {
+      main:    { weaponId: 'kampilan', abilitiesPicked: [] },
+      offhand: { weaponId: null,       abilitiesPicked: [] },
+      passives: [null, null, null, null, null, null],
+    },
+    ownedPassives: [],
+    evolutionState: {},
   };
   // Attach methods so callers can do player.update(dt) / player.takeDamage(n) / player.heal(n)
   player.update = (dt) => updatePlayer(player, dt);
