@@ -57,4 +57,12 @@ export class StateMachine {
   update(dt) {
     this._states[this._current].update?.(dt);
   }
+
+  /**
+   * Render the active state.
+   * @param {CanvasRenderingContext2D} ctx
+   */
+  render(ctx) {
+    this._states[this._current].render?.(ctx);
+  }
 }

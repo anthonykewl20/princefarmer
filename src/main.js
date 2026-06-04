@@ -8,7 +8,7 @@
 //  5. Hooks the state machine's update into the LittleJS game loop.
 //  6. Exposes a global for the Playwright E2E test to drive transitions.
 
-import { engineInit, timeDelta } from 'littlejsengine';
+import { engineInit, timeDelta, mainContext, mainCanvas } from 'littlejsengine';
 import { loadJSON } from './utils/json-loader.js';
 import { GameDB, loadRooms, loadDungeons, loadWeapons, loadMonsters, loadAbilities, loadPassives, loadClasses } from './engine/gamedb.js';
 import { SaveManager } from './persistence/save.js';
@@ -22,8 +22,8 @@ import { classSelectScene } from './scenes/class-select.js';
 import { loadoutScene, setLoadoutStateMachine } from './scenes/loadout.js';
 import { registerServiceWorker } from './sw-register.js';
 
-const canvas = document.getElementById('game-canvas');
-if (!canvas) throw new Error('game-canvas not found in DOM');
+const root = document.getElementById('game-root');
+if (!root) throw new Error('game-root not found in DOM');
 
 /** Loads all room + dungeon JSON into GameDBs. */
 function loadContent() {
@@ -85,10 +85,16 @@ async function boot() {
     () => sm.update(timeDelta),             // gameUpdate
     undefined,                              // gameUpdatePost
     undefined,                              // gameRender
-    undefined,                              // gameRenderPost
+    () => sm.render(mainContext),           // gameRenderPost
     [],                                     // imageSources
-    canvas                                  // rootElement
+    root                                    // rootElement
   );
+
+  if (mainCanvas) {
+    mainCanvas.id = 'game-canvas';
+    mainCanvas.style.width = '100vw';
+    mainCanvas.style.height = '100vh';
+  }
 
   // Expose for the Playwright E2E test to drive transitions.
   window.__pf = {
