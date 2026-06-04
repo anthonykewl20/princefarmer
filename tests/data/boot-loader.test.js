@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadRooms, loadDungeons } from '../../src/engine/gamedb.js';
+import { loadRooms, loadDungeons, loadClasses } from '../../src/engine/gamedb.js';
 
 describe('loadRooms', () => {
   it('returns a GameDB containing the stub room', () => {
@@ -16,5 +16,14 @@ describe('loadDungeons', () => {
     const dungeon = db.get('01-stub-sandbox');
     expect(dungeon).not.toBeNull();
     expect(dungeon.rooms).toContain('01-stub-sandbox');
+  });
+});
+
+describe('loadClasses', () => {
+  it('returns a GameDB containing the five starter classes', () => {
+    const db = loadClasses();
+    expect(db.get('lakan-alon')).not.toBeNull();
+    expect(db.get('datu-hiraya')).not.toBeNull();
+    expect(db.size).toBe(5);
   });
 });

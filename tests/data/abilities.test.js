@@ -25,4 +25,18 @@ describe('abilities.json', () => {
       expect(['arc', 'line', 'circle', 'cone']).toContain(a.aoe.shape);
     }
   });
+
+  it('contains the five class signature abilities', () => {
+    const signatureIds = abilities
+      .filter((a) => a.kind === 'signature')
+      .map((a) => a.id)
+      .sort();
+    expect(signatureIds).toEqual([
+      'earthshaker',
+      'ember-dance',
+      'moon-disc',
+      'thunder-lunge',
+      'tidal-pulse',
+    ]);
+  });
 });

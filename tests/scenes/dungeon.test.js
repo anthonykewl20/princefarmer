@@ -189,9 +189,7 @@ describe('dungeon scene', () => {
       // Player is at (1, 3), aswang at (2, 3) — distance 1.0, in range
       dungeonScene.update(0.1);
 
-      // The aswang should have taken damage
-      const aswang = dungeonScene._monsters[0];
-      expect(aswang.hp).toBeLessThan(30);
+      expect(dungeonScene._monsters[0].hp).toBeLessThan(30);
     });
   });
 
@@ -385,6 +383,58 @@ describe('dungeon scene', () => {
       expect(state).toBeTruthy();
       expect(state.kills).toBe(1);
       expect(state.elementDamage.spirit).toBeGreaterThan(0);
+    });
+  });
+
+  describe('update — class signature ability (M4)', () => {
+    it('fires the selected signature ability on attack2', () => {
+      const { dungeon, room } = setupDungeon({
+        room: {
+          width: 5, height: 3,
+          spawn: { x: 1, y: 1 },
+          exit: { x: 4, y: 0 },
+          tiles: ['.....', '.....', '#####'],
+          props: [],
+          monsterSpawns: [{ monsterId: 'aswang', x: 2, y: 1, count: 1 }],
+        },
+      });
+      const kampilan = {
+        id: 'kampilan', element: 'spirit',
+        autoAttack: { range: 1.2, shape: 'arc', arc: Math.PI / 2, tick: 99, damage: 1 },
+        abilities: ['lunging-strike'],
+      };
+      const aswang = {
+        id: 'aswang', hp: 20, damage: 1, speed: 1, contactRange: 0.6, behavior: 'strafe-lunge', drops: [],
+      };
+      const abilities = new Map([[
+        'tidal-pulse',
+        { id: 'tidal-pulse', element: 'water', damage: 24, cooldown: 1, range: 1.6, aoe: { shape: 'circle', radius: 1.6 } },
+      ]]);
+      dungeonScene.enter({
+        dungeonId: dungeon.id,
+        rooms: new Map([[room.id, room]]),
+        weapons: new Map([['kampilan', kampilan]]),
+        monsters: new Map([['aswang', aswang]]),
+        abilities,
+        passives: new Map(),
+        hubTransition: vi.fn(),
+      });
+
+      const p = dungeonScene._player;
+      p.x = 1;
+      p.y = 1;
+      p.signatureAbilityId = 'tidal-pulse';
+      p.signatureLastUsedTime = -10;
+      dungeonScene._input = {
+        isPressed: () => false,
+        wasJustPressed: (action) => action === 'attack2',
+      };
+
+      dungeonScene.update(0.1);
+
+      expect(dungeonScene._monsters.length).toBe(0);
+      expect(p.signatureLastUsedTime).toBeGreaterThan(0);
+      expect(p.evolutionState.kampilan.elementDamage.water).toBeGreaterThan(0);
     });
   });
 });

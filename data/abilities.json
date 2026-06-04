@@ -12,5 +12,78 @@
       "radius": 1.0
     },
     "fxRef": "fx/lunge"
+  },
+  {
+    "id": "tidal-pulse",
+    "name": "Tidal Pulse",
+    "element": "water",
+    "damage": 24,
+    "cooldown": 4.0,
+    "range": 1.6,
+    "aoe": {
+      "shape": "circle",
+      "radius": 1.6
+    },
+    "kind": "signature",
+    "fxRef": "fx/tide"
+  },
+  {
+    "id": "thunder-lunge",
+    "name": "Thunder Lunge",
+    "element": "lightning",
+    "damage": 28,
+    "cooldown": 4.5,
+    "range": 2.2,
+    "aoe": {
+      "shape": "line",
+      "range": 2.2,
+      "thickness": 0.6
+    },
+    "kind": "signature",
+    "fxRef": "fx/thunder"
+  },
+  {
+    "id": "ember-dance",
+    "name": "Ember Dance",
+    "element": "fire",
+    "damage": 22,
+    "cooldown": 3.5,
+    "range": 1.5,
+    "aoe": {
+      "shape": "cone",
+      "arc": 1.8849555921538759,
+      "radius": 1.5
+    },
+    "kind": "signature",
+    "fxRef": "fx/ember"
+  },
+  {
+    "id": "moon-disc",
+    "name": "Moon Disc",
+    "element": "spirit",
+    "damage": 26,
+    "cooldown": 3.5,
+    "range": 1.8,
+    "aoe": {
+      "shape": "arc",
+      "arc": 2.0943951023931953,
+      "radius": 1.8
+    },
+    "kind": "signature",
+    "fxRef": "fx/moon"
+  },
+  {
+    "id": "earthshaker",
+    "name": "Earthshaker",
+    "element": "earth",
+    "damage": 32,
+    "cooldown": 5.0,
+    "range": 1.4,
+    "aoe": {
+      "shape": "circle",
+      "radius": 1.4
+    },
+    "kind": "signature",
+    "fxRef": "fx/earth"
   }
 ]

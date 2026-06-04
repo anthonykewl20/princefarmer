@@ -11,8 +11,10 @@ import { createInput } from '../engine/input.js';
 
 let sm = null;
 let enterDungeon = null;
+let openLoadout = null;
 export function setHubStateMachine(s) { sm = s; }
 export function setEnterDungeon(fn) { enterDungeon = fn; }
+export function setOpenLoadout(fn) { openLoadout = fn; }
 
 const ENTRANCE_X = 5;
 const ENTRANCE_Y = 1;
@@ -47,7 +49,8 @@ export const hubScene = {
 
     // M3: open loadout scene on L
     if (this._input.wasJustPressed('loadout') && this._player) {
-      if (sm) sm.transition('loadout', { player: this._player });
+      if (openLoadout) openLoadout(this._player);
+      else if (sm) sm.transition('loadout', { player: this._player });
       return;
     }
 

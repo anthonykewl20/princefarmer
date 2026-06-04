@@ -11,6 +11,7 @@
  */
 
 import { DEFAULT_GRAVITY, DEFAULT_FRICTION, createBody, applyGravity, applyFriction, integrate } from './physics.js';
+import { DEFAULT_CLASS_ID, DEFAULT_SIGNATURE_ABILITY_ID, cloneLoadout } from './classes.js';
 
 export const MAX_HP = 100;
 export const MAX_RUN_SPEED = 4;
@@ -18,6 +19,7 @@ export const ACCEL = 30;
 export const JUMP_IMPULSE = -10;
 export const CLIMB_SPEED = 2;
 export const FALL_DAMAGE_THRESHOLD = 2;
+export const CURRENT_SAVE_VERSION = 4;
 
 /**
  * Create a new Player.
@@ -58,6 +60,9 @@ export function createPlayer(x, y, input) {
     },
     ownedPassives: [],
     evolutionState: {},
+    classId: DEFAULT_CLASS_ID,
+    signatureAbilityId: DEFAULT_SIGNATURE_ABILITY_ID,
+    signatureLastUsedTime: 0,
   };
   // Attach methods so callers can do player.update(dt) / player.takeDamage(n) / player.heal(n)
   player.update = (dt) => updatePlayer(player, dt);
@@ -157,6 +162,69 @@ export function takeDamage(p, amount) {
 
 export function heal(p, amount) {
   p.hp = Math.min(p.maxHp, p.hp + amount);
+}
+
+export function serializePlayerToSave(player) {
+  return {
+    version: CURRENT_SAVE_VERSION,
+    player: {
+      classId: player.classId ?? DEFAULT_CLASS_ID,
+      signatureAbilityId: player.signatureAbilityId ?? DEFAULT_SIGNATURE_ABILITY_ID,
+      hp: player.hp,
+      maxHp: player.maxHp,
+      level: player.level,
+      xp: player.xp,
+      attackPower: player.attackPower,
+    },
+    weapons: [
+      {
+        slot: 'main',
+        id: player.loadout?.main?.weaponId ?? 'kampilan',
+        abilitiesPicked: player.loadout?.main?.abilitiesPicked ?? [],
+      },
+      {
+        slot: 'offhand',
+        id: player.loadout?.offhand?.weaponId ?? null,
+        abilitiesPicked: player.loadout?.offhand?.abilitiesPicked ?? [],
+      },
+    ],
+    loadout: {
+      passives: cloneLoadout(player.loadout).passives,
+    },
+    ownedPassives: Array.isArray(player.ownedPassives) ? player.ownedPassives.slice() : [],
+    evolutionState: player.evolutionState ?? {},
+  };
+}
+
+export function hydratePlayerFromSave(saveData, input = null) {
+  const player = createPlayer(0, 0, input ?? saveData?.player?.input ?? {});
+  const main = saveData?.weapons?.find((slot) => slot.slot === 'main') ?? null;
+  const offhand = saveData?.weapons?.find((slot) => slot.slot === 'offhand') ?? null;
+
+  player.hp = saveData?.player?.hp ?? player.hp;
+  player.maxHp = saveData?.player?.maxHp ?? player.maxHp;
+  player.level = saveData?.player?.level ?? player.level;
+  player.xp = saveData?.player?.xp ?? player.xp;
+  player.attackPower = saveData?.player?.attackPower ?? player.attackPower;
+  player.classId = saveData?.player?.classId ?? DEFAULT_CLASS_ID;
+  player.signatureAbilityId = saveData?.player?.signatureAbilityId ?? DEFAULT_SIGNATURE_ABILITY_ID;
+  player.loadout = cloneLoadout({
+    main: {
+      weaponId: main?.id ?? player.loadout.main.weaponId,
+      abilitiesPicked: main?.abilitiesPicked ?? player.loadout.main.abilitiesPicked,
+    },
+    offhand: {
+      weaponId: offhand?.id ?? player.loadout.offhand.weaponId,
+      abilitiesPicked: offhand?.abilitiesPicked ?? player.loadout.offhand.abilitiesPicked,
+    },
+    passives: saveData?.loadout?.passives ?? player.loadout.passives,
+  });
+  player.ownedPassives = Array.isArray(saveData?.ownedPassives) ? saveData.ownedPassives.slice() : [];
+  player.evolutionState = saveData?.evolutionState ?? {};
+  player.pendingLevelUp = false;
+  player.isDead = false;
+  player.signatureLastUsedTime = saveData?.player?.signatureLastUsedTime ?? 0;
+  return player;
 }
 
 // Alias for the engine convention

@@ -1,0 +1,57 @@
+[
+  {
+    "id": "lakan-alon",
+    "name": "Lakan Alon",
+    "description": "A balanced duelist who opens with a fluid stance and a defensive pulse.",
+    "signatureAbilityId": "tidal-pulse",
+    "starterLoadout": {
+      "main": { "weaponId": "kampilan", "abilitiesPicked": ["lunging-strike", "sweep"] },
+      "offhand": { "weaponId": "baladaw", "abilitiesPicked": ["flame-slash", "ember-step"] },
+      "passives": ["vigor", null, null, null, null, null]
+    }
+  },
+  {
+    "id": "datu-kidlat",
+    "name": "Datu Kidlat",
+    "description": "An aggressive opener built around tempo, crits, and a lightning rush.",
+    "signatureAbilityId": "thunder-lunge",
+    "starterLoadout": {
+      "main": { "weaponId": "baladaw", "abilitiesPicked": ["flame-slash", "burning-lunge"] },
+      "offhand": { "weaponId": "kampilan", "abilitiesPicked": ["thrust", "shield-bash"] },
+      "passives": ["stormcall", null, null, null, null, null]
+    }
+  },
+  {
+    "id": "raha-salakay",
+    "name": "Raha Salakay",
+    "description": "A close-range breaker with heavier bursts and an explosive fire arc.",
+    "signatureAbilityId": "ember-dance",
+    "starterLoadout": {
+      "main": { "weaponId": "kampilan", "abilitiesPicked": ["sweep", "thrust"] },
+      "offhand": { "weaponId": "baladaw", "abilitiesPicked": ["solar-thrust", "flame-slash"] },
+      "passives": ["might", null, null, null, null, null]
+    }
+  },
+  {
+    "id": "lakan-mayari",
+    "name": "Lakan Mayari",
+    "description": "A lunar skirmisher who leans on spirit damage and sustain.",
+    "signatureAbilityId": "moon-disc",
+    "starterLoadout": {
+      "main": { "weaponId": "kampilan", "abilitiesPicked": ["lunging-strike", "shield-bash"] },
+      "offhand": { "weaponId": "baladaw", "abilitiesPicked": ["ember-step", "burning-lunge"] },
+      "passives": ["soulrend", null, null, null, null, null]
+    }
+  },
+  {
+    "id": "datu-hiraya",
+    "name": "Datu Hiraya",
+    "description": "A patient controller that starts sturdier and reshapes space around them.",
+    "signatureAbilityId": "earthshaker",
+    "starterLoadout": {
+      "main": { "weaponId": "baladaw", "abilitiesPicked": ["ember-step", "solar-thrust"] },
+      "offhand": { "weaponId": "kampilan", "abilitiesPicked": ["sweep", "lunging-strike"] },
+      "passives": ["stoneheart", null, null, null, null, null]
+    }
+  }
+]

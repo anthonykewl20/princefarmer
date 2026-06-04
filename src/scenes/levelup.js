@@ -12,38 +12,10 @@
 
 import { applyLevelUpRewards } from '../engine/levelup.js';
 import { pickPassiveChoices } from '../engine/passivedrop.js';
+import { serializePlayerToSave } from '../engine/player.js';
 import { SaveManager } from '../persistence/save.js';
 
 const FLASH_DURATION = 1.0; // seconds
-
-function buildSavePayload(player) {
-  return {
-    version: 3,
-    player: {
-      classId: player.classId,
-      hp: player.hp,
-      maxHp: player.maxHp,
-      level: player.level,
-      xp: player.xp,
-      attackPower: player.attackPower,
-    },
-    weapons: [
-      {
-        slot: 'main',
-        id: player.loadout?.main?.weaponId ?? 'kampilan',
-        abilitiesPicked: player.loadout?.main?.abilitiesPicked ?? [],
-      },
-      {
-        slot: 'offhand',
-        id: player.loadout?.offhand?.weaponId ?? null,
-        abilitiesPicked: player.loadout?.offhand?.abilitiesPicked ?? [],
-      },
-    ],
-    loadout: player.loadout,
-    ownedPassives: player.ownedPassives ?? [],
-    evolutionState: player.evolutionState ?? {},
-  };
-}
 
 export const levelupScene = {
   name: 'levelup',
@@ -67,7 +39,7 @@ export const levelupScene = {
     if (this._player) {
       applyLevelUpRewards(this._player);
       this._player.pendingLevelUp = false;
-      SaveManager.save(buildSavePayload(this._player)).catch(() => {});
+      SaveManager.save(serializePlayerToSave(this._player)).catch(() => {});
     }
   },
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { GameDB, loadWeapons, loadMonsters, loadAbilities } from '../../src/engine/gamedb.js';
+import { GameDB, loadWeapons, loadMonsters, loadAbilities, loadClasses, loadPassives } from '../../src/engine/gamedb.js';
 
 describe('GameDB', () => {
   let db;
@@ -65,12 +65,19 @@ describe('loadAbilities', () => {
   });
 });
 
-import { loadPassives } from '../../src/engine/gamedb.js';
-
 describe('loadPassives (M3)', () => {
   it('loads passives.json and indexes by id', () => {
     const passives = loadPassives();
     expect(passives.get('might')).toBeTruthy();
     expect(passives.size).toBe(6);
+  });
+});
+
+describe('loadClasses (M4)', () => {
+  it('loads classes.json and indexes by id', () => {
+    const classes = loadClasses();
+    expect(classes.get('lakan-alon')).toBeTruthy();
+    expect(classes.get('datu-kidlat')).toBeTruthy();
+    expect(classes.size).toBe(5);
   });
 });
