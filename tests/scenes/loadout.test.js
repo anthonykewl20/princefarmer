@@ -37,3 +37,26 @@ describe('loadout scene skeleton (M3)', () => {
     expect(sm.transition).toHaveBeenCalledWith('hub');
   });
 });
+
+describe('loadout scene — weapons step (M3)', () => {
+  beforeEach(() => { loadoutScene.exit(); });
+
+  it('lists available weapons from the weapons registry', () => {
+    const weapons = new Map([['kampilan', { id: 'kampilan' }], ['baladaw', { id: 'baladaw' }]]);
+    loadoutScene.enter({ player: { loadout: { main: { weaponId: null }, offhand: { weaponId: null }, passives: [null,null,null,null,null,null] } }, weapons });
+    expect(loadoutScene._stepState.weaponsList).toEqual(['kampilan', 'baladaw']);
+  });
+
+  it('confirming weapons step writes the chosen ids to player.loadout', () => {
+    const weapons = new Map([['kampilan', { id: 'kampilan' }], ['baladaw', { id: 'baladaw' }]]);
+    const player = { loadout: { main: { weaponId: 'kampilan', abilitiesPicked: [] }, offhand: { weaponId: null, abilitiesPicked: [] }, passives: [null,null,null,null,null,null] } };
+    loadoutScene.enter({ player, weapons });
+    // Manually set the picks (the picker UI is tested via integration; here
+    // we set the step state directly to simulate "user picked these")
+    loadoutScene._stepState.mainPick = 'kampilan';
+    loadoutScene._stepState.offhandPick = 'baladaw';
+    loadoutScene._commitWeapons();
+    expect(player.loadout.main.weaponId).toBe('kampilan');
+    expect(player.loadout.offhand.weaponId).toBe('baladaw');
+  });
+});

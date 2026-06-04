@@ -22,8 +22,17 @@ export const loadoutScene = {
   enter(ctx = {}) {
     this._player = ctx.player || null;
     if (ctx.input) this._input = ctx.input; // tests can inject; main.js wires real input
+    this._weapons = ctx.weapons || new Map();
     this._step = 'weapons';
-    this._stepState = {};
+    this._stepState = {
+      weaponsList: Array.from(this._weapons.keys()),
+      mainPick: this._player?.loadout?.main?.weaponId || null,
+      offhandPick: this._player?.loadout?.offhand?.weaponId || null,
+      // abilities step
+      abilitiesPicks: this._player?.loadout?.main?.abilitiesPicked?.slice() || [],
+      // passives step
+      passiveSlots: this._player?.loadout?.passives?.slice() || [null,null,null,null,null,null],
+    };
   },
 
   exit() {
@@ -45,14 +54,42 @@ export const loadoutScene = {
   },
 
   _advance() {
-    if (this._step === 'weapons') this._step = 'abilities';
-    else if (this._step === 'abilities') this._step = 'passives';
-    else if (this._step === 'passives') {
-      // Finalize: persist loadout to player (mutates in place)
-      // Each step's picker writes to player.loadout directly; this is a hook
-      // for any post-pick validation in a future task.
+    if (this._step === 'weapons') {
+      this._commitWeapons();
+      this._step = 'abilities';
+    } else if (this._step === 'abilities') {
+      this._commitAbilities();
+      this._step = 'passives';
+    } else if (this._step === 'passives') {
+      this._commitPassives();
       if (sm) sm.transition('hub');
     }
+  },
+
+  _commitWeapons() {
+    if (!this._player) return;
+    this._player.loadout.main.weaponId = this._stepState.mainPick;
+    this._player.loadout.offhand.weaponId = this._stepState.offhandPick;
+    // Reset ability picks to match the new main weapon's pool
+    const main = this._weapons.get(this._stepState.mainPick);
+    if (main) {
+      this._player.loadout.main.abilitiesPicked = [];
+      this._stepState.abilitiesPicks = [];
+    }
+    const off = this._weapons.get(this._stepState.offhandPick);
+    if (off) {
+      this._player.loadout.offhand.abilitiesPicked = [];
+    }
+  },
+
+  _commitAbilities() {
+    if (!this._player) return;
+    this._player.loadout.main.abilitiesPicked = this._stepState.abilitiesPicks.slice(0, 2);
+  },
+
+  _commitPassives() {
+    if (!this._player) return;
+    this._player.loadout.passives = this._stepState.passiveSlots.slice(0, 6);
   },
 
   render(ctx) {
