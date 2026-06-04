@@ -31,11 +31,26 @@ test.describe('PrinceFarmer smoke test', () => {
 
     const roundTrip = await page.evaluate(async () => {
       const save = window.__pf.save;
-      // Write a v2 save. SaveManager.load() runs the v1→v2 migration, so
-      // a v1 payload would be read back as v2 with M2 fields populated.
-      await save.write({ version: 2, player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' } });
+      // Write a v3 save. SaveManager.load() runs the full migration chain
+      // (v1 → v2 → v3) so the round-trip preserves M2 + M3 fields.
+      const v3Payload = {
+        version: 3,
+        player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' },
+        weapons: [{ slot: 'main', id: 'kampilan', abilitiesPicked: ['lunging-strike', 'sweep'] }],
+        loadout: { passives: [null, null, null, null, null, null] },
+        ownedPassives: [],
+        evolutionState: {},
+      };
+      await save.write(v3Payload);
       return await save.load();
     });
-    expect(roundTrip).toEqual({ version: 2, player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' } });
+    expect(roundTrip).toEqual({
+      version: 3,
+      player: { level: 7, attackPower: 2, xp: 12, classId: 'lakan-alon' },
+      weapons: [{ slot: 'main', id: 'kampilan', abilitiesPicked: ['lunging-strike', 'sweep'] }],
+      loadout: { passives: [null, null, null, null, null, null] },
+      ownedPassives: [],
+      evolutionState: {},
+    });
   });
 });
